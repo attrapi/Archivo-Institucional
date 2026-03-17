@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATTRAPI — Programa de Regularización del Archivo Institucional</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* ─── TOKENS ─────────────────────────────────────────── */
+        :root {
+            /* Fondos */
+            --bg:  #09090b;
+            --s1:  #110d0f;
+            --s2:  #181114;
+            --s3:  #211620;
+
+            --border:   #2e2028;
+            --border-h: #4a303a;
+
+            /* ── Paleta #691c32 ─────────────────────────────────
+               wine-950 → wine-100, construida desde el base
+            ─────────────────────────────────────────────────── */
+            --wine-950: #200810;
+            --wine-900: #3d1020;
+            --wine-800: #691c32;   /* ← color solicitado       */
+            --wine-700: #8b2440;
+            --wine-600: #a82d4e;
+            --wine-500: #c43d60;
+            --wine-400: #d96278;
+            --wine-300: #e8909e;
+            --wine-200: #f2bec7;
+            --wine-100: #fce8ec;
+
+            /* Acento cálido complementario — rosa-malva */
+            --rose:   #e879a0;
+            --rose-l: #f5b8d0;
+
+            /* Contraste frío — teal para datos positivos */
+            --teal:   #14b8a6;
+            --teal-l: #5eead4;
+
+            /* Dorado / cobre */
+            --gold:   #c8965a;
+            --gold-l: #e0b87a;
+
+            /* Semáforo — status de bodegas */
+            --red:    #ef4444;
+            --amber:  #f59e0b;
+            --green:  #22c55e;
+            --sky:    #38bdf8;
+
+            /* Texto */
+            --t1: #faf5f7;
+            --t2: #a88a93;
+            --t3: #5c4049;
+
+            --r: 12px;
+        }
+
+        /* ─── RESET ──────────────────────────────────────────── */
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            background: #0d0608;
+            background-image:
+                radial-gradient(ellipse 80% 60% at 0% 0%,    rgba(105,28,50,.55)  0%, transparent 50%),
+                radial-gradient(ellipse 60% 45% at 100% 100%, rgba(139,36,64,.35) 0%, transparent 55%),
+                radial-gradient(ellipse 50% 40% at 50% 50%,  rgba(168,45,78,.12)  0%, transparent 65%);
+            color: var(--t1);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ─── LAYOUT SHELL ───────────────────────────────────── */
+        .shell {
+            max-width: 1360px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* ─── TOP BAR ────────────────────────────────────────── */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.1rem 0;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .topbar::after {
+            content: '';
+            position: absolute;
+            bottom: -1px; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, var(--wine-800), var(--wine-500), transparent 60%);
+            opacity: .6;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: .85rem;
+        }
+
+        .brand-mark {
+            width: 38px; height: 38px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, var(--wine-800), var(--wine-600));
+            border: 1px solid rgba(196,61,96,.35);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            font-size: .85rem; font-weight: 800;
+            color: var(--wine-100); letter-spacing: -.5px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 12px rgba(105,28,50,.4);
+        }
+
+        .brand-name {
+            font-size: .95rem;
+            font-weight: 600;
+            color: var(--wine-300);
+            letter-spacing: -.2px;
+        }
+
+        .brand-sub {
+            font-size: .72rem;
+            color: var(--wine-300);
+            letter-spacing: .3px;
+            opacity: .85;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+        }
+
+        .pill {
+            padding: .28rem .75rem;
+            border-radius: 100px;
+            font-size: .68rem;
+            font-weight: 600;
+            letter-spacing: .8px;
+            text-transform: uppercase;
+            border: 1px solid var(--border-h);
+            color: var(--t2);
+            background: var(--s2);
+        }
+
+        .pill--wine {
+            background: rgba(105,28,50,.2);
+            border-color: rgba(196,61,96,.3);
+            color: var(--wine-300);
+        }
+
+        .pill--live {
+            background: rgba(34,197,94,.1);
+            border-color: rgba(34,197,94,.25);
+            color: var(--green);
+        }
+
+        .pill--live::before {
+            content: '';
+            display: inline-block;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            margin-right: .4rem;
+            vertical-align: middle;
+            animation: pulse 2s infinite;
+        }
+
+        .pill--proceso {
+            background: rgba(245,158,11,.1);
+            border-color: rgba(245,158,11,.3);
+            color: var(--amber);
+        }
+
+        .pill--proceso::before {
+            content: '';
+            display: inline-block;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--amber);
+            margin-right: .4rem;
+            vertical-align: middle;
+            animation: pulse 1.6s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: .4; }
+        }
+
+        /* ─── PAGE HEADER ────────────────────────────────────── */
+        .page-header {
+            padding: 2.5rem 0 2rem;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+        }
+
+        .page-header h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -.5px;
+            background: linear-gradient(90deg, var(--wine-400), var(--wine-300));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.15;
+        }
+
+        .page-header p {
+            font-size: .82rem;
+            color: var(--t2);
+            margin-top: .35rem;
+            max-width: 480px;
+        }
+
+        .meta-chips {
+            display: flex;
+            gap: .5rem;
+            align-items: center;
+        }
+
+        /* ─── STAT CARDS ─────────────────────────────────────── */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .kpi {
+            background: var(--s1);
+            padding: 1.6rem 1.75rem;
+            position: relative;
+            transition: background .2s;
+        }
+
+        .kpi:hover { background: var(--s2); }
+
+        .kpi__eyebrow {
+            font-size: .68rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--t3);
+            margin-bottom: .75rem;
+        }
+
+        .kpi__value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.6rem;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: -2px;
+            margin-bottom: .5rem;
+        }
+
+        .kpi:nth-child(1) .kpi__value { color: #e879f9; }   /* fuchsia  */
+        .kpi:nth-child(2) .kpi__value { color: #06b6d4; }   /* cyan     */
+        .kpi:nth-child(3) .kpi__value { color: #fb923c; }   /* naranja  */
+        .kpi:nth-child(4) .kpi__value { color: #a3e635; }   /* lima     */
+
+        .kpi__label {
+            font-size: .78rem;
+            color: var(--t2);
+        }
+
+        /* Acento de color lateral */
+        .kpi::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 20%; bottom: 20%;
+            width: 2px;
+            border-radius: 0 2px 2px 0;
+        }
+
+        .kpi:nth-child(1)::before { background: linear-gradient(180deg, var(--wine-800), var(--wine-500)); }
+        .kpi:nth-child(2)::before { background: var(--teal); }
+        .kpi:nth-child(3)::before { background: var(--rose); }
+        .kpi:nth-child(4)::before { background: var(--gold); }
+
+        /* ─── MAIN GRID ──────────────────────────────────────── */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        /* ─── CARD BASE ──────────────────────────────────────── */
+        .card {
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            overflow: hidden;
+            border-top: 2px solid var(--wine-800);
+        }
+
+        .card-head {
+            padding: 1.25rem 1.5rem 0;
+        }
+
+        .card-title {
+            font-size: .92rem;
+            font-weight: 600;
+            color: var(--t1);
+            letter-spacing: -.1px;
+        }
+
+        .card-sub {
+            font-size: .74rem;
+            color: var(--t3);
+            margin-top: .2rem;
+        }
+
+        /* ─── TABLE ──────────────────────────────────────────── */
+        .tbl-wrap { overflow: hidden; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead tr {
+            border-bottom: 1px solid var(--border);
+        }
+
+        thead th {
+            padding: .75rem 1.5rem;
+            text-align: left;
+            font-size: .65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--t3);
+            background: var(--s1);
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background .15s;
+        }
+
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: var(--s2); }
+
+        tbody td {
+            padding: .9rem 1.5rem;
+            font-size: .84rem;
+            color: var(--t1);
+        }
+
+        .bodega-id {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px; height: 28px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: .82rem;
+            background: rgba(105,28,50,.25);
+            border: 1px solid rgba(196,61,96,.3);
+            color: var(--wine-300);
+        }
+
+        .td-num {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: .9rem;
+        }
+
+        .bar-wrap { display: flex; align-items: center; gap: .6rem; }
+
+        .bar-track {
+            flex: 1;
+            height: 4px;
+            border-radius: 100px;
+            background: var(--s3);
+            overflow: hidden;
+            min-width: 60px;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 100px;
+            transition: width 1.3s cubic-bezier(.22,1,.36,1);
+        }
+
+        .bar-pct {
+            font-size: .72rem;
+            font-weight: 600;
+            min-width: 34px;
+            text-align: right;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .c-red    { color: var(--red); }
+        .c-amber  { color: var(--amber); }
+        .c-green  { color: var(--green); }
+        .c-sky    { color: var(--sky); }
+
+        /* ─── CHART ──────────────────────────────────────────── */
+        .chart-body { padding: 1rem 1.5rem 1.25rem; }
+
+        .chart-entry {
+            display: grid;
+            grid-template-columns: 64px 1fr 62px 62px;
+            align-items: center;
+            gap: .75rem;
+            padding: .55rem 0;
+        }
+
+        .chart-entry + .chart-entry {
+            border-top: 1px solid var(--border);
+        }
+
+        .chart-entry--hero {
+            background: rgba(105,28,50,.12);
+            border: 1px solid rgba(139,36,64,.3) !important;
+            border-radius: 8px;
+            padding: .7rem .75rem;
+            margin-bottom: .3rem;
+        }
+
+        .chart-entry--hero + .chart-entry {
+            border-top: none;
+            margin-top: .3rem;
+        }
+
+        .ch-label {
+            font-size: .72rem;
+            font-weight: 500;
+            color: var(--t2);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chart-entry--hero .ch-label {
+            font-weight: 600;
+            color: var(--wine-300);
+        }
+
+        .ch-bars { display: flex; flex-direction: column; gap: 4px; }
+
+        .ch-bar {
+            height: 8px;
+            border-radius: 3px;
+            min-width: 2px;
+            transition: width 1.6s cubic-bezier(.22,1,.36,1);
+        }
+
+        .ch-bar--t { background: linear-gradient(90deg, var(--wine-800), var(--wine-500), var(--wine-400)); }
+        .ch-bar--a { background: linear-gradient(90deg, var(--teal), var(--teal-l)); }
+
+        .ch-val {
+            font-family: 'Outfit', sans-serif;
+            font-size: .76rem;
+            font-weight: 700;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .ch-val--t { color: var(--wine-300); }
+        .ch-val--a { color: var(--teal-l); }
+
+        /* ─── LEGEND ─────────────────────────────────────────── */
+        .legend {
+            display: flex;
+            gap: 1.25rem;
+            padding: .9rem 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            font-size: .71rem;
+            color: var(--t2);
+        }
+
+        .legend-dot {
+            width: 8px; height: 8px;
+            border-radius: 2px;
+        }
+
+        .ld-t { background: linear-gradient(135deg, var(--wine-800), var(--wine-400)); }
+        .ld-a { background: var(--teal); }
+
+        /* ─── FOOTER ─────────────────────────────────────────── */
+        .footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 0 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer p {
+            font-size: .72rem;
+            color: var(--t3);
+        }
+
+        .footer-right {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            font-size: .72rem;
+            color: var(--t3);
+        }
+
+        .footer-dot {
+            width: 3px; height: 3px;
+            border-radius: 50%;
+            background: var(--wine-700);
+        }
+
+        .train-wrap {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            opacity: .55;
+        }
+
+        .train-icon {
+            font-size: 1rem;
+            line-height: 1;
+            filter: grayscale(.2);
+        }
+
+        .train-track {
+            display: flex;
+            gap: 3px;
+            align-items: center;
+        }
+
+        .train-track span {
+            display: inline-block;
+            width: 5px;
+            height: 2px;
+            border-radius: 1px;
+            background: var(--wine-600);
+        }
+
+        /* cada tramo un poco más claro para dar perspectiva */
+        .train-track span:nth-child(2) { opacity: .6; width: 4px; }
+        .train-track span:nth-child(3) { opacity: .35; width: 3px; }
+        .train-track span:nth-child(4) { opacity: .18; width: 2px; }
+
+        /* ─── CARD SPACER ────────────────────────────────────── */
+        .card-head { padding: 1.25rem 1.5rem .85rem; }
+
+        /* ─── DIVIDER ────────────────────────────────────────── */
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 0;
+        }
+
+        /* ─── ANIMATIONS ─────────────────────────────────────── */
+        @keyframes up {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .a { animation: up .45s ease both; }
+        .a1 { animation-delay: .05s; }
+        .a2 { animation-delay: .10s; }
+        .a3 { animation-delay: .15s; }
+        .a4 { animation-delay: .20s; }
+        .a5 { animation-delay: .27s; }
+        .a6 { animation-delay: .35s; }
+
+        /* ─── RESPONSIVE ─────────────────────────────────────── */
+        @media (max-width: 1100px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .shell { padding: 0 1rem; }
+            .kpi-grid { grid-template-columns: repeat(2,1fr); }
+            .page-header { flex-direction: column; align-items: flex-start; gap: .75rem; }
+        }
+
+        @media (max-width: 480px) {
+            .kpi-grid { grid-template-columns: 1fr; }
+            .topbar { gap: .5rem; }
+            .brand-sub { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="shell">
+
+    <!-- TOP BAR -->
+    <nav class="topbar a a1">
+        <div class="brand">
+            <div class="brand-mark">AT</div>
+            <div>
+                <div class="brand-name">Archivo Institucional &nbsp;·&nbsp; <span style="color:var(--wine-300);font-weight:500;">ATTRAPI</span> &nbsp;·&nbsp; <span style="color:var(--t2);font-weight:400;font-size:.88rem;">Agencia de Trenes y Transporte Público Integrado</span></div>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <span class="pill pill--live">En línea</span>
+        </div>
+    </nav>
+
+    <!-- PAGE HEADER -->
+    <header class="page-header a a2">
+        <div>
+            <h1>Programa de Regularización</h1>
+            <p>Resumen de bodegas, transferencias primarias y cajas archivadas al cierre del ejercicio 2026.</p>
+        </div>
+        <div class="meta-chips">
+            <span class="pill pill--proceso">En proceso</span>
+            <span class="pill">4 Bodegas</span>
+            <span class="pill">8 Dirs. Grales.</span>
+        </div>
+    </header>
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid a a3">
+        <div class="kpi">
+            <div class="kpi__eyebrow">Total Cajas Archivadas</div>
+            <div class="kpi__value">4,882</div>
+            <div class="kpi__label">En 4 bodegas activas</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi__eyebrow">Transferencias 2026</div>
+            <div class="kpi__value">3,510</div>
+            <div class="kpi__label">8 direcciones generales</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi__eyebrow">Superficie Total</div>
+            <div class="kpi__value">1,992</div>
+            <div class="kpi__label">Metros cuadrados de bodega</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi__eyebrow">Cajas + Transferencias</div>
+            <div class="kpi__value">8,830</div>
+            <div class="kpi__label">UO lidera con mayor volumen</div>
+        </div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="main-grid">
+
+        <!-- BODEGAS TABLE -->
+        <div class="card a a4">
+            <div class="card-head">
+                <div class="card-title">Bodegas</div>
+                <div class="card-sub">Contenedores · Oficinas "Las Bombas"</div>
+            </div>
+            <div class="tbl-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Bodega</th>
+                            <th>m²</th>
+                            <th>Cajas</th>
+                            <th>Ocupación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="bodega-id">G</span></td>
+                            <td class="td-num">280</td>
+                            <td class="td-num">2,389</td>
+                            <td>
+                                <div class="bar-wrap">
+                                    <div class="bar-track">
+                                        <div class="bar-fill" style="width:0%;background:var(--red);" data-w="100"></div>
+                                    </div>
+                                    <span class="bar-pct c-red">100%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="bodega-id">E</span></td>
+                            <td class="td-num">280</td>
+                            <td class="td-num">1,200</td>
+                            <td>
+                                <div class="bar-wrap">
+                                    <div class="bar-track">
+                                        <div class="bar-fill" style="width:0%;background:var(--amber);" data-w="50"></div>
+                                    </div>
+                                    <span class="bar-pct c-amber">50%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="bodega-id">J</span></td>
+                            <td class="td-num">1,152</td>
+                            <td class="td-num">882</td>
+                            <td>
+                                <div class="bar-wrap">
+                                    <div class="bar-track">
+                                        <div class="bar-fill" style="width:0%;background:var(--green);" data-w="37"></div>
+                                    </div>
+                                    <span class="bar-pct c-green">37%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="bodega-id">F</span></td>
+                            <td class="td-num">280</td>
+                            <td class="td-num">411</td>
+                            <td>
+                                <div class="bar-wrap">
+                                    <div class="bar-track">
+                                        <div class="bar-fill" style="width:0%;background:var(--sky);" data-w="17"></div>
+                                    </div>
+                                    <span class="bar-pct c-sky">17%</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TRANSFERENCIAS CHART -->
+        <div class="card a a5">
+            <div class="card-head">
+                <div class="card-title">Transferencias Primarias · Cierre 2026</div>
+                <div class="card-sub">Transferencias y cajas archivadas por dirección general</div>
+            </div>
+
+            <div class="chart-body">
+
+                <!-- UO — destacado -->
+                <div class="chart-entry chart-entry--hero">
+                    <span class="ch-label">UO</span>
+                    <div class="ch-bars">
+                        <div class="ch-bar ch-bar--t" style="width:0%" data-w="55"></div>
+                        <div class="ch-bar ch-bar--a" style="width:0%" data-w="100"></div>
+                    </div>
+                    <span class="ch-val ch-val--t">4,882</span>
+                    <span class="ch-val ch-val--a">8,830</span>
+                </div>
+
+                <div class="chart-entry">
+                    <span class="ch-label">UPPTP</span>
+                    <div class="ch-bars">
+                        <div class="ch-bar ch-bar--t" style="width:0%" data-w="18"></div>
+                    </div>
+                    <span class="ch-val ch-val--t">1,610</span>
+                    <span class="ch-val" style="color:var(--t3)">—</span>
+                </div>
+
+                <div class="chart-entry">
+                    <span class="ch-label">UT</span>
+                    <div class="ch-bars">
+                        <div class="ch-bar ch-bar--t" style="width:0%" data-w="17"></div>
+                    </div>
+                    <span class="ch-val ch-val--t">1,474</span>
+                    <span class="ch-val" style="color:var(--t3)">—</span>
+                </div>
+
+                <div class="chart-entry">
+                    <span class="ch-label">UAF</span>
+                    <div class="ch-bars">
+                        <div class="ch-bar ch-bar--t" style="width:0%" data-w="2.4"></div>
+                    </div>
+                    <span class="ch-val ch-val--t">209</span>
+                    <span class="ch-val" style="color:var(--t3)">—</span>
+                </div>
+
+                <div class="chart-entry">
+                    <span class="ch-label">UPF</span>
+                    <div class="ch-bars">
+                        <div class="ch-bar ch-bar--t" style="width:0%" data-w="0.9"></div>
+                    </div>
+                    <span class="ch-val ch-val--t">78</span>
+                    <span class="ch-val" style="color:var(--t3)">—</span>
+                </div>
+
+                <div class="chart-entry">
+                    <span class="ch-label">UEIRF</span>
+                    <div class="ch-bars">
+                        <div class="ch-bar ch-bar--t" style="width:0%" data-w="0.8"></div>
+                    </div>
+                    <span class="ch-val ch-val--t">73</span>
+                    <span class="ch-val" style="color:var(--t3)">—</span>
+                </div>
+
+                <div class="chart-entry">
+                    <span class="ch-label">UVSR</span>
+                    <div class="ch-bars">
+                        <div class="ch-bar ch-bar--t" style="width:0%" data-w="0.5"></div>
+                    </div>
+                    <span class="ch-val ch-val--t">44</span>
+                    <span class="ch-val" style="color:var(--t3)">—</span>
+                </div>
+
+                <div class="chart-entry">
+                    <span class="ch-label">UAJ</span>
+                    <div class="ch-bars">
+                        <div class="ch-bar ch-bar--t" style="width:0%" data-w="0.25"></div>
+                    </div>
+                    <span class="ch-val ch-val--t">22</span>
+                    <span class="ch-val" style="color:var(--t3)">—</span>
+                </div>
+
+            </div>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot ld-t"></div>
+                    Transferencias
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot ld-a"></div>
+                    Cajas Archivadas (UO)
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer a a6">
+        <p>© 2026 ATTRAPI — Agencia de Trenes y Transporte Público Integrado · Gobierno de México</p>
+        <div class="footer-right">
+            <span>Archivo Institucional</span>
+            <div class="footer-dot"></div>
+            <div class="train-wrap">
+                <span class="train-icon">🚆</span>
+                <div class="train-track">
+                    <span></span><span></span><span></span><span></span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</div>
+
+<script>
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            document.querySelectorAll('[data-w]').forEach(el => {
+                el.style.width = el.getAttribute('data-w') + '%';
+            });
+        }, 400);
+    });
+</script>
+
+</body>
+</html>
