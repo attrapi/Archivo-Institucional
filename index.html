@@ -233,7 +233,7 @@
         /* ─── STAT CARDS ─────────────────────────────────────── */
         .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 1px;
             background: var(--border);
             border: 1px solid var(--border);
@@ -273,6 +273,7 @@
         .kpi:nth-child(2) .kpi__value { color: #06b6d4; }   /* cyan     */
         .kpi:nth-child(3) .kpi__value { color: #fb923c; }   /* naranja  */
         .kpi:nth-child(4) .kpi__value { color: #a3e635; }   /* lima     */
+        .kpi:nth-child(5) .kpi__value { color: #f472b6; }   /* rosa     */
 
         .kpi__label {
             font-size: .78rem;
@@ -292,6 +293,7 @@
         .kpi:nth-child(2)::before { background: var(--teal); }
         .kpi:nth-child(3)::before { background: var(--rose); }
         .kpi:nth-child(4)::before { background: var(--gold); }
+        .kpi:nth-child(5)::before { background: linear-gradient(180deg, #be185d, #f472b6); }
 
         /* ─── MAIN GRID ──────────────────────────────────────── */
         .main-grid {
@@ -596,12 +598,20 @@
 
         @media (max-width: 768px) {
             .shell { padding: 0 1rem; }
-            .kpi-grid { grid-template-columns: repeat(2,1fr); }
+            .kpi-grid { grid-template-columns: repeat(5,1fr); }
             .page-header { flex-direction: column; align-items: flex-start; gap: .75rem; }
+            .kpi { padding: 1rem .75rem; }
+            .kpi__value { font-size: 1.6rem; letter-spacing: -1px; }
+            .kpi__eyebrow { font-size: .58rem; letter-spacing: .8px; }
+            .kpi__label { font-size: .65rem; }
         }
 
         @media (max-width: 480px) {
-            .kpi-grid { grid-template-columns: 1fr; }
+            .kpi-grid { grid-template-columns: repeat(5,1fr); }
+            .kpi { padding: .75rem .5rem; }
+            .kpi__value { font-size: 1.2rem; letter-spacing: -.5px; }
+            .kpi__eyebrow { font-size: .52rem; letter-spacing: .5px; }
+            .kpi__label { font-size: .58rem; }
             .topbar { gap: .5rem; }
             .brand-sub { display: none; }
         }
@@ -663,6 +673,11 @@
             <div class="kpi__eyebrow">Transferencia a AGN </div>
             <div class="kpi__value">2,320</div>
             <div class="kpi__label">Bajas de Cajas archivadas </div>        
+        </div>
+        <div class="kpi">
+            <div class="kpi__eyebrow">Transferencia AGN</div>
+            <div class="kpi__value">00,000</div>
+            <div class="kpi__label">Archivo General de la Nación</div>
         </div>
     </div>
 
