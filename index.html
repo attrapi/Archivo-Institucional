@@ -537,6 +537,51 @@
             margin: 0;
         }
 
+        /* ─── NAV BUTTONS ────────────────────────────────────── */
+        .nav-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+            padding: .85rem 0 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-btn {
+            background: rgba(0,0,0,.18);
+            color: var(--t2);
+            border: 1px solid var(--border-h);
+            padding: .45rem .9rem;
+            border-radius: .75rem;
+            cursor: pointer;
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: .75rem;
+            font-weight: 600;
+            letter-spacing: .3px;
+            backdrop-filter: blur(4px);
+            transition: transform .12s ease, filter .12s ease, background .12s ease, color .12s ease;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,.1);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .nav-btn:active { transform: translateY(0); }
+
+        .nav-btn--primary {
+            background: linear-gradient(135deg, rgba(0,0,0,.32), rgba(0,0,0,.18));
+            color: #fff;
+            border-color: rgba(255,255,255,.45);
+            font-weight: 700;
+            box-shadow: 0 8px 20px rgba(0,0,0,.25);
+        }
+
+        .nav-btn--primary:hover {
+            filter: brightness(1.1);
+            background: linear-gradient(135deg, rgba(0,0,0,.42), rgba(0,0,0,.28));
+        }
+
         /* ─── ANIMATIONS ─────────────────────────────────────── */
         @keyframes up {
             from { opacity: 0; transform: translateY(12px); }
@@ -589,26 +634,31 @@
                 <div class="brand-name">Archivo Institucional &nbsp;·&nbsp; <span style="color:rgba(243,231,235,.9);font-weight:500;">ATTRAPI</span> &nbsp;·&nbsp; <span style="color:var(--t2);font-weight:400;font-size:.88rem;">Agencia de Trenes y Transporte Público Integrado</span></div>
             </div>
         </div>
-        <div class="topbar-right">
-            <span class="pill pill--live">En línea</span>
-        </div>
     </nav>
 
+    <!-- NAV BUTTONS -->
+    <div class="nav-bar a a2">
+        <button class="nav-btn">Formatos</button>
+        <button class="nav-btn">Agenda de sesiones del grupo interdisciplinario</button>
+        <button class="nav-btn">Normatividad</button>
+        <button class="nav-btn">Cronograma de capacitación</button>
+        <button class="nav-btn nav-btn--primary">⬇ Descargar ficha</button>
+    </div>
+
     <!-- PAGE HEADER -->
-    <header class="page-header a a2">
+    <header class="page-header a a3">
         <div>
             <h1>Programa de Regularización</h1>
             <p>Resumen de bodegas, transferencias primarias y cajas archivadas al cierre del ejercicio 2026.</p>
         </div>
         <div class="meta-chips">
-            <span class="pill pill--proceso">En proceso</span>
             <span class="pill">4 Bodegas</span>
             <span class="pill">8 Dirs. Grales.</span>
         </div>
     </header>
 
     <!-- KPI CARDS -->
-    <div class="kpi-grid a a3">
+    <div class="kpi-grid a a4">
         <div class="kpi">
             <div class="kpi__eyebrow">Total Cajas Archivadas</div>
             <div class="kpi__value">4,882</div>
