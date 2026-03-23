@@ -605,6 +605,17 @@
         .a5 { animation-delay: .27s; }
         .a6 { animation-delay: .35s; }
 
+        /* ─── PRINT ──────────────────────────────────────────── */
+        @media print {
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            body { background: var(--guinda) !important; }
+            .topbar, .nav-bar { display: none !important; }
+            .page-header { padding-top: 1rem; }
+            .shell { padding: 0 1.5rem; }
+            .card--new-left, .card--new-right { display: none; }
+            @page { margin: 0.5cm; size: A4 landscape; }
+        }
+
         /* ─── RESPONSIVE ─────────────────────────────────────── */
         @media (max-width: 1100px) {
             .main-grid { grid-template-columns: 1fr; }
@@ -651,7 +662,7 @@
         <button class="nav-btn">Formatos</button>
         <button class="nav-btn">Agenda de sesiones del grupo interdisciplinario</button>
         <button class="nav-btn">Normatividad</button>
-        <button class="nav-btn nav-btn--primary">⬇ Descargar ficha</button>
+        <button class="nav-btn nav-btn--primary" onclick="descargarFicha()">⬇ Descargar ficha</button>
     </div>
 
     <!-- PAGE HEADER -->
@@ -897,6 +908,10 @@
             });
         }, 400);
     });
+
+    function descargarFicha() {
+        window.print();
+    }
 </script>
 
 </body>
