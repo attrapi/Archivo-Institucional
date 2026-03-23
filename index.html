@@ -530,10 +530,14 @@
         .train-track span:nth-child(3) { opacity: .35; width: 3px; }
         .train-track span:nth-child(4) { opacity: .18; width: 2px; }
 
-        /* ─── BODEGAS / GRID EXTRAS ─────────────────────────── */
-        .card--flush       { align-self: start; }
-        .card--new-left    { min-height: 18rem; }
-        .card--new-right   { align-self: start; min-height: 13rem; }
+        /* ─── COLUMN WRAPPERS ───────────────────────────────── */
+        .col-left, .col-right {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .card--new-left  { min-height: 18rem; }
+        .card--new-right { min-height: 13rem; }
 
         /* ─── DIVIDER ────────────────────────────────────────── */
         .divider {
@@ -690,8 +694,9 @@
     <!-- MAIN GRID -->
     <div class="main-grid">
 
-        <!-- BODEGAS TABLE -->
-        <div class="card card--flush a a4">
+        <!-- COLUMNA IZQUIERDA -->
+        <div class="col-left">
+        <div class="card a a4">
             <div class="card-head">
                 <div class="card-title">Bodegas</div>
                 <div class="card-sub">Contenedores · Oficinas "Las Bombas"</div>
@@ -764,7 +769,12 @@
             </div>
         </div>
 
-        <!-- TRANSFERENCIAS CHART -->
+        <!-- NUEVO CUADRO IZQUIERDO (mismo tamaño que bodegas) -->
+        <div class="card card--new-left"></div>
+        </div><!-- /col-left -->
+
+        <!-- COLUMNA DERECHA -->
+        <div class="col-right">
         <div class="card a a5">
             <div class="card-head">
                 <div class="card-title">Transferencias Primarias · Cierre 2025</div>
@@ -861,11 +871,9 @@
             </div>
         </div>
 
-        <!-- NUEVO CUADRO IZQUIERDO (mismo tamaño que bodegas) -->
-        <div class="card card--new-left"></div>
-
         <!-- NUEVO RECTÁNGULO DERECHO (mitad del tamaño de transferencias) -->
         <div class="card card--new-right"></div>
+        </div><!-- /col-right -->
 
     </div>
 
