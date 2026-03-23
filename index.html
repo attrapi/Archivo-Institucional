@@ -530,6 +530,11 @@
         .train-track span:nth-child(3) { opacity: .35; width: 3px; }
         .train-track span:nth-child(4) { opacity: .18; width: 2px; }
 
+        /* ─── BODEGAS / GRID EXTRAS ─────────────────────────── */
+        .card--flush       { align-self: start; }
+        .card--new-left    { min-height: 18rem; }
+        .card--new-right   { align-self: start; min-height: 13rem; }
+
         /* ─── DIVIDER ────────────────────────────────────────── */
         .divider {
             height: 1px;
@@ -686,7 +691,7 @@
     <div class="main-grid">
 
         <!-- BODEGAS TABLE -->
-        <div class="card a a4">
+        <div class="card card--flush a a4">
             <div class="card-head">
                 <div class="card-title">Bodegas</div>
                 <div class="card-sub">Contenedores · Oficinas "Las Bombas"</div>
@@ -855,6 +860,12 @@
                 </div>
             </div>
         </div>
+
+        <!-- NUEVO CUADRO IZQUIERDO (mismo tamaño que bodegas) -->
+        <div class="card card--new-left"></div>
+
+        <!-- NUEVO RECTÁNGULO DERECHO (mitad del tamaño de transferencias) -->
+        <div class="card card--new-right"></div>
 
     </div>
 
