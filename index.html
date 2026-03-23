@@ -51,6 +51,7 @@
             color: var(--t1);
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
+            scrollbar-gutter: stable;
         }
 
         /* ─── LAYOUT SHELL ───────────────────────────────────── */
@@ -910,7 +911,7 @@
     });
 
     function descargarFicha() {
-        window.print();
+        document.fonts.ready.then(() => window.print());
     }
 </script>
 
