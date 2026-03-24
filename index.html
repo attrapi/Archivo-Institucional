@@ -609,7 +609,11 @@
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             body { background: var(--guinda) !important; }
-            @page { margin: 0.5cm; size: A4 landscape; }
+            @page { margin: 0.8cm; size: A4 portrait; }
+            .shell { padding: 0 1rem; }
+            .kpi__value { white-space: nowrap; font-size: 2rem; letter-spacing: -1px; }
+            .kpi__eyebrow { font-size: .6rem; }
+            .main-grid { grid-template-columns: 380px 1fr; }
         }
 
 /* ─── RESPONSIVE ─────────────────────────────────────── */
