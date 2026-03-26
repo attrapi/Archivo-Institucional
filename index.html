@@ -248,6 +248,10 @@
             color: var(--t2);
         }
 
+        .kpi__spacer {
+            height: 1.1rem;
+        }
+
         /* Acento de color lateral */
         .kpi::before {
             content: '';
@@ -827,11 +831,13 @@
             <div class="kpi__eyebrow">Transferencias 2025</div>
             <div class="kpi__value">3,510</div>
             <div class="kpi__label">8 direcciones generales</div>
+            <div class="kpi__spacer"></div>
         </div>
         <div class="kpi" data-kpi="bodegas" onclick="highlightKpi(this,'bodegas')">
             <div class="kpi__eyebrow">Superficie Total</div>
             <div class="kpi__value">1,992</div>
             <div class="kpi__label">Metros cuadrados de bodega</div>
+            <div class="kpi__spacer"></div>
         </div>
         <div class="kpi" data-kpi="transferencias" onclick="highlightKpi(this,'transferencias')">
             <div class="kpi__eyebrow">Cajas + Transferencias</div>
@@ -842,6 +848,7 @@
             <div class="kpi__eyebrow">Transferencia a AGN</div>
             <div class="kpi__value">0,000</div>
             <div class="kpi__label">Bajas de Cajas archivadas</div>
+            <div class="kpi__spacer"></div>
         </div>
         <div class="kpi" data-kpi="conaliteg" onclick="highlightKpi(this,'conaliteg')">
             <div class="kpi__eyebrow">Transferencia a CONALITEG</div>
