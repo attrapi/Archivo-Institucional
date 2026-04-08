@@ -606,12 +606,9 @@ function processData(rows) {
 // ── HERO ─────────────────────────────────────────────────────────
 function renderHero(records) {
   const total    = records.reduce((s,r)=>s+r.total,0);
-  const transf   = records.reduce((s,r)=>s+r.transf,0);
   const unidades = new Set(records.map(r=>r.attrapi)).size;
-  const pct      = total > 0 ? Math.round((transf/total)*100) : 0;
   document.getElementById('hs-total').textContent    = fmt(total);
   document.getElementById('hs-unidades').textContent = unidades;
-  document.getElementById('hs-pct').textContent      = pct + '%';
 }
 
 // ── KPIs ─────────────────────────────────────────────────────────
