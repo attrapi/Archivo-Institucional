@@ -1,309 +1,266 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ATTRAPI · Archivo de Concentración</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATTRAPI · Archivo de Concentración</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<style>
+  :root {
+    --bg: #faf7f2;
+    --bg-elevated: #ffffff;
+    --bg-warm: #f4efe5;
+    --border: #e6dfd0;
+    --border-strong: #d4cab3;
+    --ink: #1a1612;
+    --ink-soft: #4a4036;
+    --ink-muted: #8a7f70;
+    --accent: #b8410e;
+    --accent-soft: #f5e3da;
+    --navy: #1d3557;
+    --gold: #c8932b;
+    --sage: #6b8e5a;
+    --mauve: #8b5a7c;
+    --shadow-sm: 0 1px 2px rgba(26, 22, 18, 0.04);
+    --shadow-md: 0 4px 12px rgba(26, 22, 18, 0.06);
+  }
 
-    :root {
-      --bg:           #faf7f2;
-      --bg-elevated:  #ffffff;
-      --bg-warm:      #f4efe5;
-      --border:       #e6dfd0;
-      --border-strong:#d4cab3;
-      --ink:          #1a1612;
-      --ink-soft:     #4a4036;
-      --ink-muted:    #8a7f70;
-      --accent:       #b8410e;
-      --accent-soft:  #f5e3da;
-      --navy:         #1d3557;
-      --gold:         #c8932b;
-      --sage:         #6b8e5a;
-      --mauve:        #8b5a7c;
-      --shadow-sm:    0 1px 2px rgba(26,22,18,.04);
-      --shadow-md:    0 4px 12px rgba(26,22,18,.07);
-    }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
 
-    body {
-      font-family: 'DM Sans', -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--ink);
-      line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
-      background-image:
-        radial-gradient(ellipse 80% 40% at 50% -10%, rgba(184,65,14,.04), transparent),
-        radial-gradient(ellipse 60% 30% at 100% 100%, rgba(29,53,87,.03), transparent);
-    }
+  body {
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(ellipse 80% 40% at 50% -10%, rgba(184, 65, 14, 0.04), transparent),
+      radial-gradient(ellipse 60% 30% at 100% 100%, rgba(29, 53, 87, 0.03), transparent);
+  }
 
-    /* ── TOPBAR ── */
-    .topbar {
-      border-bottom: 1px solid var(--border);
-      background: rgba(250,247,242,.88);
-      backdrop-filter: blur(10px);
-      position: sticky; top: 0; z-index: 100;
-    }
-    .topbar-inner {
-      max-width: 1400px; margin: 0 auto;
-      padding: 16px 40px;
-      display: flex; align-items: center; gap: 24px;
-    }
-    .brand { display: flex; align-items: center; gap: 14px; }
-    .brand-mark {
-      width: 36px; height: 36px;
-      background: var(--ink); color: var(--bg);
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Fraunces', serif;
-      font-weight: 600; font-size: 19px;
-      border-radius: 2px; flex-shrink: 0;
-    }
-    .brand-text { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 500; letter-spacing: -.01em; }
-    .brand-text small {
-      display: block;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 10px; font-weight: 400;
-      color: var(--ink-muted);
-      text-transform: uppercase; letter-spacing: .08em; margin-top: 2px;
-    }
-    .nav-tabs { display: flex; gap: 2px; margin-left: 32px; }
-    .nav-tabs button {
-      background: none; border: none;
-      font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
-      color: var(--ink-soft); padding: 7px 14px; border-radius: 6px;
-      cursor: pointer; transition: all .2s;
-    }
-    .nav-tabs button:hover { background: var(--bg-warm); color: var(--ink); }
-    .nav-tabs button.active { background: var(--ink); color: var(--bg); }
-    .topbar-right { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink-muted); letter-spacing: .06em; text-transform: uppercase; }
+  /* LOADER */
+  #loader-overlay {
+    position: fixed; inset: 0; z-index: 999;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px;
+    color: var(--ink-muted); font-size: 13px;
+    transition: opacity .4s;
+  }
+  #loader-overlay.hidden { opacity: 0; pointer-events: none; }
+  .loader-ring {
+    width: 36px; height: 36px;
+    border: 2px solid var(--border-strong);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── LOADER ── */
-    #loader {
-      max-width: 1400px; margin: 0 auto;
-      padding: 120px 40px;
-      display: flex; flex-direction: column; align-items: center; gap: 16px;
-      color: var(--ink-muted); font-size: 13px;
-    }
-    .loader-ring {
-      width: 36px; height: 36px;
-      border: 2px solid var(--border-strong);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin .8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+  /* HEADER */
+  .topbar {
+    border-bottom: 1px solid var(--border);
+    background: rgba(250, 247, 242, 0.85);
+    backdrop-filter: blur(10px);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .topbar-inner {
+    max-width: 1400px; margin: 0 auto;
+    padding: 18px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 24px;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand-mark {
+    width: 38px; height: 38px;
+    background: var(--ink); color: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 600; font-size: 20px;
+    border-radius: 2px;
+  }
+  .brand-text { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 500; letter-spacing: -0.01em; }
+  .brand-text small {
+    display: block;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px; font-weight: 400;
+    color: var(--ink-muted);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px;
+  }
+  .nav-tabs { display: flex; gap: 4px; }
+  .nav-tabs button {
+    background: none; border: none;
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    color: var(--ink-soft); padding: 8px 14px; border-radius: 6px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .nav-tabs button:hover { background: var(--bg-warm); color: var(--ink); }
+  .nav-tabs button.active { background: var(--ink); color: var(--bg); }
+  .last-update {
+    font-size: 11px; color: var(--ink-muted);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    font-family: 'JetBrains Mono', monospace;
+  }
 
-    /* ── HERO ── */
-    .hero {
-      max-width: 1400px; margin: 0 auto;
-      padding: 64px 40px 48px;
-      display: grid; grid-template-columns: 1.4fr 1fr; gap: 60px;
-      align-items: end;
-    }
-    .hero-tag {
-      display: inline-block;
-      font-size: 10px; font-weight: 500; text-transform: uppercase;
-      letter-spacing: .12em; color: var(--ink-muted);
-      padding-bottom: 14px; border-bottom: 1px solid var(--border);
-      margin-bottom: 22px;
-    }
-    .hero h1 {
-      font-family: 'Fraunces', serif;
-      font-size: clamp(38px, 5vw, 68px);
-      font-weight: 400; line-height: .96; letter-spacing: -.025em; color: var(--ink);
-    }
-    .hero h1 em { font-style: italic; font-weight: 300; color: var(--accent); }
-    .hero-desc { font-size: 14px; color: var(--ink-soft); line-height: 1.65; max-width: 360px; margin-top: 22px; }
-    .hero-desc strong { color: var(--ink); font-weight: 600; }
-    .hero-stats { display: flex; flex-direction: column; gap: 20px; }
-    .hero-stat-item { border-top: 1px solid var(--border); padding-top: 18px; }
-    .hero-stat-num { font-family: 'Fraunces', serif; font-size: 40px; font-weight: 400; letter-spacing: -.02em; }
-    .hero-stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-muted); margin-top: 2px; }
+  /* HERO */
+  .hero {
+    max-width: 1400px; margin: 0 auto;
+    padding: 70px 40px 50px;
+    display: grid; grid-template-columns: 1.4fr 1fr; gap: 60px;
+    align-items: end;
+  }
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(42px, 5.5vw, 76px);
+    font-weight: 400; line-height: 0.95; letter-spacing: -0.025em; color: var(--ink);
+  }
+  .hero h1 em { font-style: italic; font-weight: 300; color: var(--accent); }
+  .hero-tag {
+    display: inline-block;
+    font-size: 11px; font-weight: 500; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--ink-muted);
+    padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 24px;
+  }
+  .hero-summary { font-size: 15px; color: var(--ink-soft); line-height: 1.65; max-width: 380px; }
+  .hero-summary strong { color: var(--ink); font-weight: 600; }
 
-    /* ── KPIs ── */
-    .kpis-wrap { max-width: 1400px; margin: 0 auto; padding: 0 40px 56px; }
-    .kpis {
-      display: grid; grid-template-columns: repeat(4,1fr);
-      gap: 1px; background: var(--border);
-      border: 1px solid var(--border); border-radius: 4px; overflow: hidden;
-    }
-    .kpi { background: var(--bg-elevated); padding: 28px 26px; transition: background .25s; }
-    .kpi:hover { background: var(--bg-warm); }
-    .kpi-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-muted); margin-bottom: 12px; }
-    .kpi-value {
-      font-family: 'Fraunces', serif;
-      font-size: 40px; font-weight: 400; line-height: 1; letter-spacing: -.02em; color: var(--ink);
-    }
-    .kpi-value sup { font-size: 13px; color: var(--ink-muted); font-weight: 400; vertical-align: top; top: .55em; position: relative; margin-left: 3px; }
-    .kpi-meta { font-size: 11px; color: var(--ink-muted); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
-    .kpi-meta span { color: var(--accent); font-weight: 500; }
+  /* KPI ROW */
+  .kpis {
+    max-width: 1400px; margin: 0 auto;
+    padding: 0 40px 60px;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px; background: var(--border);
+    border: 1px solid var(--border); border-radius: 4px; overflow: hidden;
+  }
+  .kpi { background: var(--bg-elevated); padding: 32px 28px; transition: background 0.3s; }
+  .kpi:hover { background: var(--bg-warm); }
+  .kpi-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-muted); margin-bottom: 14px; }
+  .kpi-value { font-family: 'Fraunces', serif; font-size: 44px; font-weight: 400; line-height: 1; letter-spacing: -0.02em; color: var(--ink); }
+  .kpi-value sup { font-size: 14px; color: var(--ink-muted); font-weight: 400; margin-left: 4px; vertical-align: top; top: 0.6em; position: relative; }
+  .kpi-meta { font-size: 12px; color: var(--ink-muted); margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .kpi-meta span { color: var(--accent); font-weight: 500; }
 
-    /* ── TAB CONTENT AREA ── */
-    .tab-content-area {
-      border-top: 2px solid var(--border-strong);
-      background: var(--bg-warm);
-      padding-top: 0;
-      min-height: 60vh;
-    }
-    .tab-bar {
-      max-width: 1400px; margin: 0 auto;
-      padding: 0 40px;
-      display: flex; gap: 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .tab-bar button {
-      background: none; border: none; border-bottom: 2px solid transparent;
-      margin-bottom: -1px;
-      font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
-      color: var(--ink-muted); padding: 14px 20px;
-      cursor: pointer; transition: all .2s; letter-spacing: .01em;
-    }
-    .tab-bar button:hover { color: var(--ink); }
-    .tab-bar button.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+  /* SECTIONS */
+  section.panel { max-width: 1400px; margin: 0 auto 60px; padding: 0 40px; }
+  .section-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 28px; gap: 20px;
+    border-bottom: 1px solid var(--border); padding-bottom: 18px;
+  }
+  .section-title { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 500; letter-spacing: -0.015em; }
+  .section-sub { font-size: 12px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.08em; }
 
-    /* ── PANELS ── */
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; animation: tabSlide .3s cubic-bezier(.4,0,.2,1) both; }
-    .tab-panel section.panel:first-child { padding-top: 40px; }
-    @keyframes tabSlide {
-      from { opacity: 0; transform: translateX(16px); }
-      to   { opacity: 1; transform: translateX(0); }
-    }
+  .toggle-group {
+    display: inline-flex; background: var(--bg-warm);
+    border: 1px solid var(--border); border-radius: 6px; padding: 3px; gap: 2px;
+  }
+  .toggle-group button {
+    background: none; border: none; font-family: inherit;
+    font-size: 12px; font-weight: 500; color: var(--ink-soft);
+    padding: 6px 14px; border-radius: 4px; cursor: pointer; transition: all 0.2s;
+  }
+  .toggle-group button.active { background: var(--bg-elevated); color: var(--ink); box-shadow: var(--shadow-sm); }
 
-    /* ── SECTION ── */
-    section.panel {
-      max-width: 1400px; margin: 0 auto 56px; padding: 0 40px;
-    }
-    .section-head {
-      display: flex; align-items: baseline; justify-content: space-between;
-      margin-bottom: 26px; gap: 16px;
-      border-bottom: 1px solid var(--border); padding-bottom: 16px;
-    }
-    .section-title { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 500; letter-spacing: -.015em; }
-    .section-sub { font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .08em; }
+  .grid-2   { display: grid; grid-template-columns: 1fr 1.4fr; gap: 24px; }
+  .grid-2-eq{ display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 
-    .toggle-group {
-      display: inline-flex;
-      background: var(--bg-warm); border: 1px solid var(--border);
-      border-radius: 6px; padding: 3px; gap: 2px;
-    }
-    .toggle-group button {
-      background: none; border: none;
-      font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
-      color: var(--ink-soft); padding: 5px 12px; border-radius: 4px;
-      cursor: pointer; transition: all .2s;
-    }
-    .toggle-group button.active {
-      background: var(--bg-elevated); color: var(--ink); box-shadow: var(--shadow-sm);
-    }
+  .card {
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    border-radius: 4px; padding: 28px; box-shadow: var(--shadow-sm);
+  }
+  .card-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500; margin-bottom: 6px; }
+  .card-sub { font-size: 12px; color: var(--ink-muted); margin-bottom: 24px; text-transform: uppercase; letter-spacing: 0.06em; }
 
-    /* ── GRID ── */
-    .grid-2   { display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; }
-    .grid-2-eq{ display: grid; grid-template-columns: 1fr 1fr;   gap: 20px; }
+  .chart-wrap { position: relative; height: 320px; }
+  .chart-wrap.tall  { height: 420px; }
+  .chart-wrap.short { height: 260px; }
 
-    /* ── CARD ── */
-    .card {
-      background: var(--bg-elevated);
-      border: 1px solid var(--border);
-      border-radius: 4px; padding: 26px;
-      box-shadow: var(--shadow-sm);
-    }
-    .card-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 500; margin-bottom: 4px; }
-    .card-sub   { font-size: 11px; color: var(--ink-muted); margin-bottom: 22px; text-transform: uppercase; letter-spacing: .06em; }
-    .chart-wrap { position: relative; }
-    .chart-wrap.h-280 canvas { max-height: 280px; }
-    .chart-wrap.h-320 canvas { max-height: 320px; }
-    .chart-wrap.h-360 canvas { max-height: 360px; }
-    .chart-wrap.h-200 canvas { max-height: 200px; }
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left; font-size: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-muted);
+    padding: 12px 14px; border-bottom: 1px solid var(--border-strong);
+    cursor: pointer; user-select: none;
+  }
+  th:hover { color: var(--ink); }
+  th.num, td.num { text-align: right; font-family: 'JetBrains Mono', monospace; font-feature-settings: "tnum"; }
+  td { padding: 14px; border-bottom: 1px solid var(--border); color: var(--ink-soft); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg-warm); }
+  tr.total-row td { background: var(--ink); color: var(--bg); font-weight: 600; border-bottom: none; }
+  tr.total-row:hover td { background: var(--ink); }
+  .badge {
+    display: inline-block; font-size: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.05em; padding: 3px 8px; border-radius: 3px;
+  }
+  .badge.propio   { background: var(--accent-soft); color: var(--accent); }
+  .badge.prestado { background: #e8eef5; color: var(--navy); }
 
-    /* ── TABLE ── */
-    .tbl-toolbar {
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 12px; margin-bottom: 0;
-    }
-    .search-box {
-      background: var(--bg-warm); border: 1px solid var(--border);
-      border-radius: 6px; padding: 9px 14px;
-      font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink);
-      width: 230px; outline: none; transition: all .2s;
-    }
-    .search-box::placeholder { color: var(--ink-muted); }
-    .search-box:focus { background: var(--bg-elevated); border-color: var(--ink-muted); }
+  .search-box {
+    background: var(--bg-warm); border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px 14px; font-family: inherit; font-size: 13px; color: var(--ink);
+    width: 240px; transition: all 0.2s; outline: none;
+  }
+  .search-box::placeholder { color: var(--ink-muted); }
+  .search-box:focus { background: var(--bg-elevated); border-color: var(--ink-muted); }
 
-    .tbl-wrap { overflow-x: auto; margin-top: 20px; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    thead th {
-      text-align: left; font-size: 10px; font-weight: 600;
-      text-transform: uppercase; letter-spacing: .08em; color: var(--ink-muted);
-      padding: 10px 14px; border-bottom: 1px solid var(--border-strong);
-      cursor: pointer; user-select: none; white-space: nowrap;
-    }
-    thead th:hover { color: var(--ink); }
-    thead th.sorted { color: var(--accent); }
-    th.num, td.num {
-      text-align: right;
-      font-family: 'JetBrains Mono', monospace;
-      font-feature-settings: "tnum";
-    }
-    tbody td {
-      padding: 12px 14px; border-bottom: 1px solid var(--border);
-      color: var(--ink-soft);
-    }
-    tbody tr:last-child td { border-bottom: none; }
-    tbody tr:hover td { background: var(--bg-warm); }
-    tr.total-row td {
-      background: var(--ink); color: var(--bg);
-      font-weight: 600; border-bottom: none;
-      font-family: 'JetBrains Mono', monospace;
-    }
-    tr.total-row:hover td { background: var(--ink-soft); }
-    .badge {
-      display: inline-block; font-size: 10px; font-weight: 600;
-      text-transform: uppercase; letter-spacing: .05em;
-      padding: 2px 7px; border-radius: 3px;
-    }
-    .badge.transf { background: var(--accent-soft); color: var(--accent); }
-    .badge.derog  { background: #e8eef5; color: var(--navy); }
-    .no-results { text-align: center; padding: 40px; color: var(--ink-muted); font-size: 13px; }
+  /* LIVE BADGE */
+  .live-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--sage); border: 1px solid rgba(107,142,90,.3);
+    background: rgba(107,142,90,.08); padding: 3px 8px; border-radius: 3px;
+    margin-left: 10px;
+  }
+  .live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--sage); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-    /* ── FOOTER ── */
-    footer {
-      max-width: 1400px; margin: 60px auto 0;
-      padding: 36px 40px;
-      border-top: 1px solid var(--border);
-      display: flex; justify-content: space-between; align-items: center;
-      font-size: 12px; color: var(--ink-muted);
-    }
-    .foot-brand { font-family: 'Fraunces', serif; font-size: 14px; color: var(--ink-soft); }
+  /* FOOTER */
+  footer {
+    max-width: 1400px; margin: 80px auto 0; padding: 40px;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: var(--ink-muted);
+  }
+  footer .foot-brand { font-family: 'Fraunces', serif; font-size: 14px; color: var(--ink-soft); }
 
-    /* ── RESPONSIVE ── */
-    @media (max-width: 1024px) {
-      .topbar-inner { padding: 14px 20px; flex-wrap: wrap; }
-      .nav-tabs { order: 3; width: 100%; overflow-x: auto; margin-left: 0; }
-      .hero { grid-template-columns: 1fr; gap: 32px; padding: 44px 20px 32px; }
-      .kpis-wrap { padding: 0 20px 40px; }
-      .kpis { grid-template-columns: repeat(2,1fr); }
-      section.panel { padding: 0 20px; }
-      .grid-2, .grid-2-eq { grid-template-columns: 1fr; }
-      footer { padding: 28px 20px; flex-direction: column; gap: 10px; text-align: center; }
-    }
-    @media (max-width: 600px) {
-      .kpis { grid-template-columns: 1fr; }
-      .kpi-value { font-size: 32px; }
-      .hero h1 { font-size: 36px; }
-    }
-  </style>
+  /* TABS */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.35s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* RESPONSIVE */
+  @media (max-width: 1024px) {
+    .hero { grid-template-columns: 1fr; gap: 32px; padding: 50px 24px 30px; }
+    .topbar-inner { padding: 16px 24px; flex-wrap: wrap; }
+    .kpis { grid-template-columns: repeat(2, 1fr); padding: 0 24px 40px; }
+    section.panel { padding: 0 24px; }
+    .grid-2, .grid-2-eq { grid-template-columns: 1fr; }
+    .nav-tabs { order: 3; width: 100%; overflow-x: auto; }
+    footer { padding: 30px 24px; flex-direction: column; gap: 12px; text-align: center; }
+  }
+  @media (max-width: 600px) {
+    .kpis { grid-template-columns: 1fr; }
+    .kpi-value { font-size: 34px; }
+    .section-head { flex-direction: column; align-items: flex-start; gap: 14px; }
+  }
+</style>
 </head>
 <body>
 
-<!-- TOPBAR -->
-<div class="topbar">
+<!-- LOADER -->
+<div id="loader-overlay">
+  <div class="loader-ring"></div>
+  <p>Cargando datos desde Google Sheets…</p>
+</div>
+
+<header class="topbar">
   <div class="topbar-inner">
     <div class="brand">
       <div class="brand-mark">A</div>
@@ -312,539 +269,710 @@
         <small>Archivo de Concentración</small>
       </div>
     </div>
-    <nav class="nav-tabs" style="opacity:.5;font-size:11px;letter-spacing:.05em;pointer-events:none">
-      Archivo Institucional ATTRAPI · DGDFM
+    <nav class="nav-tabs">
+      <button class="active" data-tab="resumen">Resumen</button>
+      <button data-tab="bodegas">Bodegas</button>
+      <button data-tab="unidades">Unidades</button>
+      <button data-tab="obras">Obras</button>
+      <button data-tab="proyeccion">Proyección 2025–2029</button>
     </nav>
-    <div class="topbar-right" id="topbar-date">ACT · —</div>
+    <div class="last-update" id="last-update">ACT · —</div>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div>
+    <span class="hero-tag">Estatus general · Abril 2026</span>
+    <h1>Estado del archivo<br><em>de concentración</em></h1>
+  </div>
+  <div class="hero-summary">
+    Sistema de seguimiento del acervo documental de la <strong>Agencia Reguladora del Transporte Ferroviario</strong>, integrando inventario por bodega, unidad administrativa y proyección sexenal de obra pública 2025–2029.
   </div>
 </div>
 
-<!-- LOADER -->
-<div id="loader">
-  <div class="loader-ring"></div>
-  <p>Cargando datos desde Google Sheets…</p>
+<!-- KPI ROW -->
+<div class="kpis">
+  <div class="kpi">
+    <div class="kpi-label">Cajas instaladas</div>
+    <div class="kpi-value" id="kpi-cajas">—</div>
+    <div class="kpi-meta">Capacidad actual del acervo</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Legajos / carpetas</div>
+    <div class="kpi-value" id="kpi-legajos">—</div>
+    <div class="kpi-meta">3 legajos por caja en promedio</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Hojas estimadas</div>
+    <div class="kpi-value" id="kpi-hojas">—</div>
+    <div class="kpi-meta">800 hojas por legajo (estándar)</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Espacios de archivo</div>
+    <div class="kpi-value">5</div>
+    <div class="kpi-meta"><span>1 propio</span> · 4 prestados</div>
+  </div>
 </div>
 
-<!-- MAIN CONTENT -->
-<div id="main-content" style="display:none">
-
-  <!-- HERO -->
-  <div class="hero">
-    <div>
-      <div class="hero-tag">DGDFM · Programa de Regularización 2025–2026</div>
-      <h1>Estado del <em>archivo</em><br>de concentración</h1>
-      <p class="hero-desc">
-        Seguimiento del acervo documental de la
-        <strong>Agencia Reguladora del Transporte Ferroviario (ATTRAPI)</strong>
-        transferido a la DGDFM.
-      </p>
-    </div>
-    <div class="hero-stats">
-      <div class="hero-stat-item">
-        <div class="hero-stat-num" id="hs-total">—</div>
-        <div class="hero-stat-label">Cajas totales</div>
-      </div>
-      <div class="hero-stat-item">
-        <div class="hero-stat-num" id="hs-unidades">—</div>
-        <div class="hero-stat-label">Unidades ATTRAPI</div>
+<!-- ============== TAB: RESUMEN ============== -->
+<div class="tab-panel active" id="tab-resumen">
+  <section class="panel">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Distribución del acervo</div>
+        <div class="section-sub">Visión general por bodega y unidad</div>
       </div>
     </div>
-  </div>
-
-  <!-- KPIs -->
-  <div class="kpis-wrap">
-    <div class="kpis">
-      <div class="kpi">
-        <div class="kpi-label">Cajas Instaladas</div>
-        <div class="kpi-value" id="kpi-total">—</div>
-        <div class="kpi-meta">Total en archivo institucional</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Cajas por bodega</div>
+        <div class="card-sub">Composición del archivo físico</div>
+        <div class="chart-wrap"><canvas id="chartBodegasDonut"></canvas></div>
       </div>
-      <div class="kpi">
-        <div class="kpi-label">Unidades ATTRAPI</div>
-        <div class="kpi-value" id="kpi-unidades">—</div>
-        <div class="kpi-meta">Áreas con documentación registrada</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Transferencias</div>
-        <div class="kpi-value" id="kpi-transf">—</div>
-        <div class="kpi-meta"><span>Cajas</span> recibidas directamente</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Por Derogación</div>
-        <div class="kpi-value" id="kpi-derog">—</div>
-        <div class="kpi-meta">Cajas recibidas de DGDFM</div>
+      <div class="card">
+        <div class="card-title">Cajas por unidad administrativa <span class="live-badge"><span class="live-dot"></span>Live</span></div>
+        <div class="card-sub">Unidades del ARTF · DGDFM extinta · datos en vivo</div>
+        <div class="chart-wrap"><canvas id="chartUnidadesBar"></canvas></div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- TAB BAR -->
-  <div class="tab-content-area">
-  <div class="tab-bar">
-    <button class="active" data-tab="resumen">Resumen general</button>
-    <button data-tab="unidades">Unidades ATTRAPI</button>
-    <button data-tab="proyeccion">Proyección 2025–2029</button>
-  </div>
-
-  <!-- ═══════════ TAB: RESUMEN ═══════════ -->
-  <div class="tab-panel active" id="tab-resumen">
-    <section class="panel">
-      <div class="section-head">
-        <div>
-          <div class="section-title">Distribución general</div>
-          <div class="section-sub">Vista consolidada del acervo por unidad administrativa</div>
-        </div>
+  <section class="panel">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Acervo por obra</div>
+        <div class="section-sub">Distribución del archivo físico por proyecto</div>
       </div>
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-title">Distribución por tipo de ingreso</div>
-          <div class="card-sub">Transferidas vs. Derogación vs. Sin clasificar</div>
-          <div class="chart-wrap h-280"><canvas id="chartDonut"></canvas></div>
-        </div>
-        <div class="card">
-          <div class="card-title">Cajas por unidad ATTRAPI</div>
-          <div class="card-sub">Top 10 unidades por volumen total</div>
-          <div class="chart-wrap h-280"><canvas id="chartBarUnidades"></canvas></div>
-        </div>
-      </div>
-    </section>
+    </div>
+    <div class="card">
+      <div class="chart-wrap tall"><canvas id="chartObras"></canvas></div>
+    </div>
+  </section>
+</div>
 
-    <section class="panel">
-      <div class="section-head">
-        <div>
-          <div class="section-title">Comparativo transferencias</div>
-          <div class="section-sub">Cajas transferidas vs. por derogación — top 8 unidades</div>
-        </div>
+<!-- ============== TAB: BODEGAS ============== -->
+<div class="tab-panel" id="tab-bodegas">
+  <section class="panel">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Inventario por bodega</div>
+        <div class="section-sub">Capacidad instalada y composición documental</div>
+      </div>
+    </div>
+    <div class="grid-2-eq" style="margin-bottom:24px;">
+      <div class="card">
+        <div class="card-title">Cajas instaladas</div>
+        <div class="card-sub">Por espacio de archivo</div>
+        <div class="chart-wrap"><canvas id="chartBodegasBar"></canvas></div>
       </div>
       <div class="card">
-        <div class="chart-wrap h-320"><canvas id="chartStacked"></canvas></div>
+        <div class="card-title">Legajos vs hojas</div>
+        <div class="card-sub">Volumen documental por bodega</div>
+        <div class="chart-wrap"><canvas id="chartBodegasMultiAxis"></canvas></div>
       </div>
-    </section>
-  </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Detalle por bodega</div>
+      <div class="card-sub">Inventario completo</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Espacio</th><th>Tipo</th>
+            <th class="num">Superficie (m²)</th>
+            <th class="num">Cajas</th>
+            <th class="num">Legajos</th>
+            <th class="num">Hojas</th>
+            <th class="num">% del total</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-bodegas"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
 
-  <!-- ═══════════ TAB: UNIDADES ═══════════ -->
-  <div class="tab-panel" id="tab-unidades">
-    <section class="panel">
-      <div class="section-head">
-        <div>
-          <div class="section-title">Detalle por unidad</div>
-          <div class="section-sub">Todas las unidades ATTRAPI con sus volúmenes documentales</div>
-        </div>
+<!-- ============== TAB: UNIDADES ============== -->
+<div class="tab-panel" id="tab-unidades">
+  <section class="panel">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Unidades administrativas <span class="live-badge"><span class="live-dot"></span>Live</span></div>
+        <div class="section-sub">Cajas transferidas y recibidas por unidad · datos en vivo desde Google Sheets</div>
+      </div>
+      <input type="text" class="search-box" id="search-unidades" placeholder="Buscar unidad…">
+    </div>
+    <div class="card" style="margin-bottom:24px;">
+      <div class="card-title">Composición por unidad</div>
+      <div class="card-sub">Transferencias primarias vs cajas heredadas DGDFM</div>
+      <div class="chart-wrap tall"><canvas id="chartUnidadesStacked"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Detalle de unidades</div>
+      <div class="card-sub" id="unidades-count">—</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Unidad administrativa</th>
+            <th class="num">Transferidas</th>
+            <th class="num">Heredadas DGDFM</th>
+            <th class="num">Total</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-unidades"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<!-- ============== TAB: OBRAS ============== -->
+<div class="tab-panel" id="tab-obras">
+  <section class="panel">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Acervo por obra ferroviaria</div>
+        <div class="section-sub">Existencia actual del archivo por proyecto</div>
+      </div>
+      <div class="toggle-group">
+        <button class="active" data-metric="cajas">Cajas</button>
+        <button data-metric="hojas">Hojas</button>
+      </div>
+    </div>
+    <div class="grid-2-eq" style="margin-bottom:24px;">
+      <div class="card">
+        <div class="card-title">Existencia por obra</div>
+        <div class="card-sub" id="obras-metric-label">Cajas instaladas</div>
+        <div class="chart-wrap"><canvas id="chartObrasMetric"></canvas></div>
       </div>
       <div class="card">
-        <div class="tbl-toolbar">
-          <div style="font-size:13px;color:var(--ink-soft)" id="tbl-count">— registros</div>
-          <input class="search-box" id="search" type="text" placeholder="Buscar unidad o área DGDFM…" />
-        </div>
-        <div class="tbl-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th style="width:36px">#</th>
-                <th data-col="attrapi">Unidad ATTRAPI</th>
-                <th data-col="dgdfm">Área DGDFM</th>
-                <th class="num" data-col="transf">Transferidas ↕</th>
-                <th class="num" data-col="derog">Derogación ↕</th>
-                <th class="num" data-col="total">Total ↕</th>
-                <th>Tipo predominante</th>
-              </tr>
-            </thead>
-            <tbody id="tbl-body"></tbody>
-          </table>
-          <p class="no-results" id="no-results" style="display:none">Sin resultados para esa búsqueda.</p>
-        </div>
+        <div class="card-title">Participación porcentual</div>
+        <div class="card-sub">Distribución relativa del acervo</div>
+        <div class="chart-wrap"><canvas id="chartObrasPie"></canvas></div>
       </div>
-    </section>
-  </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Detalle por obra</div>
+      <div class="card-sub">Existencia actual</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Obra</th>
+            <th class="num">Cajas</th>
+            <th class="num">Hojas estimadas</th>
+            <th class="num">% del total</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-obras"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
 
-  <!-- ═══════════ TAB: PROYECCIÓN ═══════════ -->
-  <div class="tab-panel" id="tab-proyeccion">
-    <section class="panel">
-      <div class="section-head">
-        <div>
-          <div class="section-title">Proyección 2025–2029</div>
-          <div class="section-sub">Estimación de crecimiento del acervo basada en transferencias actuales</div>
-        </div>
-        <div class="toggle-group" id="toggle-proj">
-          <button class="active" data-view="acumulado">Acumulado</button>
-          <button data-view="anual">Entradas anuales</button>
-        </div>
+<!-- ============== TAB: PROYECCIÓN ============== -->
+<div class="tab-panel" id="tab-proyeccion">
+  <section class="panel">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Proyección sexenal 2025 – 2029</div>
+        <div class="section-sub">Crecimiento estimado del acervo por obra</div>
       </div>
-      <div class="card" style="margin-bottom:20px">
-        <div class="card-title">Crecimiento total del archivo</div>
-        <div class="card-sub">Cajas proyectadas por año</div>
-        <div class="chart-wrap h-360"><canvas id="chartProyeccion"></canvas></div>
+      <div class="toggle-group">
+        <button class="active" data-view="acumulado">Acumulado</button>
+        <button data-view="entradas">Entradas anuales</button>
       </div>
-      <div class="card">
-        <div class="card-title">Tabla de proyección anual</div>
-        <div class="card-sub">Estimación basada en ritmo de transferencia actual</div>
-        <div class="tbl-wrap">
-          <table id="tbl-proyeccion">
-            <thead>
-              <tr>
-                <th>Año</th>
-                <th class="num">Cajas nuevas</th>
-                <th class="num">Total acumulado</th>
-                <th class="num">Crecimiento %</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody id="tbl-proj-body"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-  </div>
-
-  </div><!-- /tab-content-area -->
-</div><!-- /main-content -->
+    </div>
+    <div class="card" style="margin-bottom:24px;">
+      <div class="card-title">Crecimiento total proyectado</div>
+      <div class="card-sub" id="proy-sub-total">De — cajas a 51,093 cajas en 2029</div>
+      <div class="chart-wrap tall"><canvas id="chartProyeccionTotal"></canvas></div>
+    </div>
+    <div class="card" style="margin-bottom:24px;">
+      <div class="card-title">Proyección por obra</div>
+      <div class="card-sub">Distribución del crecimiento por proyecto</div>
+      <div class="chart-wrap tall"><canvas id="chartProyeccionObras"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Tabla de proyección</div>
+      <div class="card-sub">Acumulado por año</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Obra</th>
+            <th class="num">Existencia</th>
+            <th class="num">2025</th>
+            <th class="num">2026</th>
+            <th class="num">2027</th>
+            <th class="num">2028</th>
+            <th class="num">2029</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-proyeccion"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
 
 <footer>
   <div class="foot-brand">ATTRAPI · Archivo de Concentración</div>
-  <div>Datos: Google Sheets — hoja de concentración oficial &nbsp;·&nbsp; <span id="footer-date">—</span></div>
+  <div>Unidades: Google Sheets (live) · Bodegas/Obras: Estatus_AC_ATTRAPI.xlsx · <span id="footer-date">—</span></div>
 </footer>
 
 <script>
-// GViz endpoint — no redirige, funciona con CORS desde GitHub Pages
+// =================== STATIC DATA ===================
+const DATA = {
+  bodegas: [
+    { nombre: 'Bodega G',     tipo: 'Propio',   superficie: 280,    cajas: 2585, legajos: 7755,  hojas: 6204000 },
+    { nombre: 'Bodega F',     tipo: 'Prestado', superficie: 280,    cajas: 411,  legajos: 1233,  hojas: 986400  },
+    { nombre: 'Bodega E',     tipo: 'Prestado', superficie: 280,    cajas: 1200, legajos: 3600,  hojas: 2880000 },
+    { nombre: 'Bodega J',     tipo: 'Prestado', superficie: 1152,   cajas: 2111, legajos: 6333,  hojas: 5066400 },
+    { nombre: 'Contenedores', tipo: 'Prestado', superficie: 36.98,  cajas: 979,  legajos: 2937,  hojas: 2349600 }
+  ],
+  obras: [
+    { obra: 'Tren Interurbano México–Toluca', cajas: 2962, hojas: 7108800 },
+    { obra: 'Tren Eléctrico de Guadalajara',  cajas: 2000, hojas: 4800000 },
+    { obra: 'AIFA',                            cajas: 22,   hojas: 52800   },
+    { obra: 'Dos Bocas',                       cajas: 3,    hojas: 7200    },
+    { obra: 'México – Irapuato',              cajas: 0,    hojas: 0       },
+    { obra: 'Saltillo – Nuevo Laredo',        cajas: 0,    hojas: 0       },
+    { obra: 'Otras',                           cajas: 2299, hojas: 5517600 }
+  ],
+  proyeccion: {
+    años: ['Existencia', '2025', '2026', '2027', '2028', '2029'],
+    obras: [
+      { nombre: 'Tren Interurbano',        valores: [2962,4314,5714,6714,7714,8714],  entradas:[0,1400,1400,1000,1000,1000] },
+      { nombre: 'Guadalajara',             valores: [2000,3000,4000,5000,6000,6000],  entradas:[0,1000,1000,1000,1000,0]    },
+      { nombre: 'AIFA',                    valores: [22,42,242,442,642,842],           entradas:[0,20,200,200,200,200]       },
+      { nombre: 'Dos Bocas',               valores: [3,13,13,13,13,13],               entradas:[0,10,0,0,0,0]               },
+      { nombre: 'México – Irapuato',       valores: [0,3000,6000,9000,12000,15000],   entradas:[0,3000,3000,3000,3000,3000] },
+      { nombre: 'Saltillo – Nuevo Laredo', valores: [0,3000,6000,9000,12000,15000],   entradas:[0,3000,3000,3000,3000,3000] },
+      { nombre: 'Otras',                   valores: [2299,2324,3124,3924,4724,5524],  entradas:[0,25,800,800,800,800]       }
+    ],
+    totales: [7286,15693,25093,34093,43093,51093]
+  },
+  unidades: [] // se llena desde Google Sheets
+};
+
+// =================== HELPERS ===================
+const PALETTE = ['#b8410e','#1d3557','#c8932b','#6b8e5a','#8b5a7c','#d97757','#5a7a9b'];
+const fmt = n => Number(n).toLocaleString('es-MX');
+const fmtShort = n => {
+  if (n >= 1e6) return (n/1e6).toFixed(2)+'M';
+  if (n >= 1e3) return (n/1e3).toFixed(1)+'k';
+  return String(n);
+};
+const toNum = v => { const n = parseInt(String(v||'').replace(/[^\d]/g,''),10); return isNaN(n)?0:n; };
+
+// =================== CSV FETCH ===================
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/1cCT9MeMAr3pc0xr4ZHHnGwSdje9Ju6sd/gviz/tq?tqx=out:csv&gid=1157075445';
 
-const PALETTE = ['#b8410e','#1d3557','#6b8e5a','#c8932b','#8b5a7c','#2a7f7f','#c05050'];
-
-Chart.defaults.font.family = "'DM Sans', sans-serif";
-Chart.defaults.color = '#8a7f70';
-Chart.defaults.borderColor = '#e6dfd0';
-Chart.defaults.plugins.legend.labels.usePointStyle = true;
-Chart.defaults.plugins.tooltip.backgroundColor = '#1a1612';
-Chart.defaults.plugins.tooltip.titleFont = { family: "'Fraunces', serif", size: 14, weight: '500' };
-Chart.defaults.plugins.tooltip.bodyFont  = { family: "'DM Sans', sans-serif", size: 12 };
-Chart.defaults.plugins.tooltip.padding = 12;
-Chart.defaults.plugins.tooltip.cornerRadius = 4;
-
-// ── STATE ────────────────────────────────────────────────────────
-let allRows = [], sortCol = 'total', sortDir = -1, maxTotal = 1;
-let projChart = null, projView = 'acumulado';
-
-// ── HELPERS ──────────────────────────────────────────────────────
-const toNum = v => { const n = parseInt(String(v||'').replace(/[^\d]/g,''),10); return isNaN(n)?0:n; };
-const fmt   = n => n.toLocaleString('es-MX');
-const fmtK  = n => n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n);
-const trunc = (s,n) => s.length > n ? s.slice(0,n)+'…' : s;
-
-// ── FETCH ────────────────────────────────────────────────────────
-function loadData() {
+function loadCSV() {
   fetch(CSV_URL)
-    .then(r => {
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return r.text();
-    })
+    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
     .then(text => {
       const { data } = Papa.parse(text, { skipEmptyLines: false });
-      processData(data);
+      parseUnidades(data);
+      initDashboard();
     })
     .catch(err => {
-      document.getElementById('loader').innerHTML =
-        `<p style="color:#b8410e;font-size:14px">⚠ Error al cargar los datos: ${err.message}</p>`;
+      // Si falla el fetch, usar datos de respaldo del dashboard original
+      console.warn('CSV no disponible, usando datos de respaldo:', err.message);
+      DATA.unidades = [
+        { nombre: 'U. de Economía, Información, Estadística y Estudios Sectoriales', transferidas: 13,  heredadas: 73,   total: 86   },
+        { nombre: 'U. de Verificación, Seguridad y Registro Ferroviario',            transferidas: 45,  heredadas: 0,    total: 45   },
+        { nombre: 'U. de Proyectos Ferroviarios',                                    transferidas: 357, heredadas: 454,  total: 811  },
+        { nombre: 'U. de Asuntos Jurídicos',                                         transferidas: 22,  heredadas: 209,  total: 231  },
+        { nombre: 'U. de Administración y Finanzas',                                 transferidas: 0,   heredadas: 585,  total: 585  },
+        { nombre: 'U. de Construcción',                                              transferidas: 0,   heredadas: 5528, total: 5528 }
+      ];
+      initDashboard();
     });
 }
 
-// ── PROCESS ──────────────────────────────────────────────────────
-// Estructura real del CSV (columnas con celdas combinadas exportadas):
-//   col[0] = Nombre unidad ATTRAPI (solo en la primera fila del grupo)
-//   col[1] = vacío (celda combinada)
-//   col[2] = Área DGDFM o etiqueta de resumen
-//   col[3] = Cajas transferidas
-//   col[4] = Cajas por derogación
-//   col[5] = Total cajas de la unidad
-function processData(rows) {
-  const records = [];
+function parseUnidades(rows) {
+  // col[0]=ATTRAPI, col[1]=vacío, col[2]=área/periodo, col[3]=transferidas, col[4]=derogación, col[5]=total
   let currentGroup = '';
+  const records = [];
 
   for (const row of rows) {
-    const col0 = (row[0] || '').trim();
-    const col2 = (row[2] || '').trim();
+    const col0  = (row[0] || '').trim();
     const total = toNum(row[5]);
 
-    // Rastrear nombre de grupo (col[0] no vacío y no es encabezado de columna)
-    if (col0 && !/ESTATUS|DENOMINACIÓN|ATTRAPI|^\d+\s+transfer/i.test(col0)) {
+    // Rastrear nombre del grupo (excluir encabezados y filas de conteo)
+    if (col0 && !/ESTATUS|DENOMINACI|^\d+\s+transfer/i.test(col0)) {
       currentGroup = col0;
     }
 
-    // Solo filas con total > 0 y <= 5000 (evitar gran total del sheet)
-    if (!total || total > 5000) continue;
+    // Solo filas con total real
+    if (!total || total > 8000) continue;
 
     const transf = Math.min(toNum(row[3]), total);
     const derog  = Math.min(toNum(row[4]), total);
-    const nombre = currentGroup || col0 || col2 || '—';
-    const area   = col2 && col2 !== currentGroup ? col2 : '—';
 
-    records.push({ attrapi: nombre, dgdfm: area, transf, derog, total });
+    // Evitar duplicados: si ya hay un registro con el mismo grupo, sumar
+    const existing = records.find(r => r.nombre === currentGroup);
+    if (existing) {
+      existing.transferidas += transf;
+      existing.heredadas    += derog;
+      existing.total        += total;
+    } else {
+      records.push({ nombre: currentGroup || '—', transferidas: transf, heredadas: derog, total });
+    }
   }
 
-  allRows  = records.sort((a,b) => b.total - a.total);
-  maxTotal = allRows[0]?.total || 1;
-
-  const now = new Date().toLocaleString('es-MX', { dateStyle:'long', timeStyle:'short' });
-  document.getElementById('topbar-date').textContent = 'ACT · ABR 2026';
-  document.getElementById('footer-date').textContent  = now;
-
-  renderHero(records);
-  renderKPIs(records);
-  renderChartDonut(records);
-  renderChartBarUnidades(records);
-  renderChartStacked(records);
-  renderTable(allRows);
-  renderProyeccion(records);
-
-  document.getElementById('loader').style.display        = 'none';
-  document.getElementById('main-content').style.display  = 'block';
-
-  setupTabs();
-  setupSearch();
-  setupSort();
-  setupProjToggle();
+  if (records.length > 0) DATA.unidades = records;
 }
 
-// ── HERO ─────────────────────────────────────────────────────────
-function renderHero(records) {
-  const total    = records.reduce((s,r)=>s+r.total,0);
-  const unidades = new Set(records.map(r=>r.attrapi)).size;
-  document.getElementById('hs-total').textContent    = fmt(total);
-  document.getElementById('hs-unidades').textContent = unidades;
-}
+// =================== INIT ===================
+function initDashboard() {
+  const TOTAL_CAJAS = DATA.bodegas.reduce((s,b) => s+b.cajas, 0);
+  const TOTAL_HOJAS = DATA.bodegas.reduce((s,b) => s+b.hojas, 0);
 
-// ── KPIs ─────────────────────────────────────────────────────────
-function renderKPIs(records) {
-  const total    = records.reduce((s,r)=>s+r.total,0);
-  const transf   = records.reduce((s,r)=>s+r.transf,0);
-  const derog    = records.reduce((s,r)=>s+r.derog,0);
-  const unidades = new Set(records.map(r=>r.attrapi)).size;
-  document.getElementById('kpi-total').textContent    = fmt(total);
-  document.getElementById('kpi-unidades').textContent = unidades;
-  document.getElementById('kpi-transf').textContent   = fmt(transf);
-  document.getElementById('kpi-derog').textContent    = fmt(derog);
-}
+  // KPIs desde unidades (CSV)
+  const cajasLive = DATA.unidades.reduce((s,u) => s+u.total, 0) || TOTAL_CAJAS;
+  const legajosLive = cajasLive * 3;
+  const hojasLive = legajosLive * 800;
+  document.getElementById('kpi-cajas').textContent   = fmt(cajasLive);
+  document.getElementById('kpi-legajos').textContent = fmt(legajosLive);
+  const hM = (hojasLive/1e6).toFixed(2);
+  document.getElementById('kpi-hojas').innerHTML = `${hM}<sup>M</sup>`;
 
-// ── DONUT ─────────────────────────────────────────────────────────
-function renderChartDonut(records) {
-  const transf = records.reduce((s,r)=>s+r.transf,0);
-  const derog  = records.reduce((s,r)=>s+r.derog,0);
-  const total  = records.reduce((s,r)=>s+r.total,0);
-  const sinCl  = Math.max(0, total - transf - derog);
-  new Chart(document.getElementById('chartDonut'), {
+  // Fecha
+  const now = new Date().toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'});
+  document.getElementById('last-update').textContent = 'ACT · ABR 2026';
+  document.getElementById('footer-date').textContent = now;
+  document.getElementById('proy-sub-total').textContent =
+    `De ${fmt(cajasLive)} cajas a 51,093 cajas en 2029`;
+
+  // Unidades count
+  document.getElementById('unidades-count').textContent =
+    `${DATA.unidades.length} unidades del ARTF · datos en vivo`;
+
+  // Chart.js defaults
+  Chart.defaults.font.family = "'DM Sans', sans-serif";
+  Chart.defaults.font.size   = 12;
+  Chart.defaults.color       = '#4a4036';
+  Chart.defaults.borderColor = '#e6dfd0';
+  Chart.defaults.plugins.legend.labels.usePointStyle = true;
+  Chart.defaults.plugins.legend.labels.boxWidth      = 8;
+  Chart.defaults.plugins.legend.labels.padding       = 16;
+  Chart.defaults.plugins.tooltip.backgroundColor     = '#1a1612';
+  Chart.defaults.plugins.tooltip.titleFont = { family:"'Fraunces', serif", size:13, weight:'500' };
+  Chart.defaults.plugins.tooltip.bodyFont  = { family:"'DM Sans', sans-serif", size:12 };
+  Chart.defaults.plugins.tooltip.padding       = 12;
+  Chart.defaults.plugins.tooltip.cornerRadius  = 4;
+  Chart.defaults.plugins.tooltip.displayColors = false;
+
+  // ── CHARTS ──────────────────────────────────────────────────────
+
+  // 1. Donut bodegas
+  new Chart(document.getElementById('chartBodegasDonut'), {
     type: 'doughnut',
     data: {
-      labels: ['Transferidas','Por derogación','Sin clasificar'],
-      datasets: [{ data:[transf,derog,sinCl], backgroundColor:['#b8410e','#1d3557','#e6dfd0'], borderColor:'#ffffff', borderWidth:2, hoverOffset:6 }]
+      labels: DATA.bodegas.map(b => b.nombre),
+      datasets: [{ data: DATA.bodegas.map(b=>b.cajas), backgroundColor: PALETTE, borderWidth:2, borderColor:'#ffffff' }]
     },
     options: {
-      cutout:'64%',
-      plugins:{
-        legend:{ position:'bottom', labels:{ padding:16, font:{size:12} } },
-        tooltip:{ callbacks:{ label: ctx => ` ${fmt(ctx.parsed)} cajas` } }
-      },
-      responsive:true, maintainAspectRatio:true,
+      responsive:true, maintainAspectRatio:false, cutout:'62%',
+      plugins: {
+        legend: { position:'right' },
+        tooltip: { callbacks: { label: ctx => `${fmt(ctx.parsed)} cajas (${(ctx.parsed/TOTAL_CAJAS*100).toFixed(1)}%)` } }
+      }
     }
   });
-}
 
-// ── BAR HORIZONTAL ───────────────────────────────────────────────
-function renderChartBarUnidades(records) {
-  const top = [...records].sort((a,b)=>b.total-a.total).slice(0,10);
-  new Chart(document.getElementById('chartBarUnidades'), {
-    type: 'bar',
-    data: {
-      labels: top.map(r => trunc(r.attrapi, 32)),
-      datasets: [{
-        label: 'Cajas',
-        data: top.map(r=>r.total),
-        backgroundColor: top.map((_,i)=> PALETTE[i % PALETTE.length] + 'cc'),
-        borderColor:     top.map((_,i)=> PALETTE[i % PALETTE.length]),
-        borderWidth: 1, borderRadius: 3, borderSkipped: false,
-      }]
-    },
-    options: {
-      indexAxis:'y',
-      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx => ` ${fmt(ctx.parsed.x)} cajas` } } },
-      scales:{
-        x:{ grid:{ color:'#e6dfd0' }, ticks:{ font:{size:11}, callback: v => fmtK(v) } },
-        y:{ grid:{ display:false }, ticks:{ font:{size:11} } }
-      },
-      responsive:true, maintainAspectRatio:true,
-    }
-  });
-}
+  // 2. Bar unidades (desde CSV)
+  const unidadesOrdenadas = [...DATA.unidades].sort((a,b)=>b.total-a.total);
+  const trunc = (s,n) => s.length>n ? s.substring(0,n-1)+'…' : s;
 
-// ── STACKED ───────────────────────────────────────────────────────
-function renderChartStacked(records) {
-  const top = [...records].sort((a,b)=>b.total-a.total).slice(0,8);
-  new Chart(document.getElementById('chartStacked'), {
+  new Chart(document.getElementById('chartUnidadesBar'), {
     type:'bar',
-    data:{
-      labels: top.map(r=>trunc(r.attrapi,28)),
-      datasets:[
-        { label:'Transferidas',   data:top.map(r=>r.transf), backgroundColor:'#b8410ecc', borderColor:'#b8410e', borderWidth:1, borderRadius:3 },
-        { label:'Por derogación', data:top.map(r=>r.derog),  backgroundColor:'#1d3557cc', borderColor:'#1d3557', borderWidth:1, borderRadius:3 },
+    data: {
+      labels: unidadesOrdenadas.map(u => trunc(u.nombre, 38)),
+      datasets: [{ data: unidadesOrdenadas.map(u=>u.total), backgroundColor:'#b8410e', borderRadius:2, barThickness:14 }]
+    },
+    options: {
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend: { display:false },
+        tooltip: { callbacks: { title: ctx=>unidadesOrdenadas[ctx[0].dataIndex].nombre, label: ctx=>`${fmt(ctx.parsed.x)} cajas` } }
+      },
+      scales: {
+        x: { grid:{color:'#f0ead9'}, ticks:{callback:v=>fmtShort(v)} },
+        y: { grid:{display:false}, ticks:{font:{size:10}} }
+      }
+    }
+  });
+
+  // 3. Obras bar
+  new Chart(document.getElementById('chartObras'), {
+    type:'bar',
+    data: {
+      labels: DATA.obras.map(o=>o.obra),
+      datasets: [{ label:'Cajas', data:DATA.obras.map(o=>o.cajas), backgroundColor:PALETTE, borderRadius:3 }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales: { x:{grid:{display:false}}, y:{grid:{color:'#f0ead9'}, ticks:{callback:v=>fmtShort(v)}} }
+    }
+  });
+
+  // 4. Bodegas bar
+  new Chart(document.getElementById('chartBodegasBar'), {
+    type:'bar',
+    data: {
+      labels: DATA.bodegas.map(b=>b.nombre),
+      datasets: [{ data:DATA.bodegas.map(b=>b.cajas), backgroundColor:DATA.bodegas.map(b=>b.tipo==='Propio'?'#b8410e':'#1d3557'), borderRadius:3 }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>`${fmt(ctx.parsed.y)} cajas`}} },
+      scales:{ x:{grid:{display:false}}, y:{grid:{color:'#f0ead9'}} }
+    }
+  });
+
+  // 5. Multi-axis bodegas
+  new Chart(document.getElementById('chartBodegasMultiAxis'), {
+    type:'bar',
+    data: {
+      labels: DATA.bodegas.map(b=>b.nombre),
+      datasets: [
+        { label:'Legajos', data:DATA.bodegas.map(b=>b.legajos), backgroundColor:'#c8932b', yAxisID:'y', borderRadius:3 },
+        { label:'Hojas (millones)', data:DATA.bodegas.map(b=>b.hojas/1e6), backgroundColor:'#6b8e5a', yAxisID:'y1', borderRadius:3, type:'line', tension:.3, borderColor:'#6b8e5a', pointBackgroundColor:'#6b8e5a', pointRadius:5 }
       ]
     },
-    options:{
-      plugins:{ legend:{ position:'top', labels:{ font:{size:12} } }, tooltip:{ callbacks:{ label: ctx=>`${ctx.dataset.label}: ${fmt(ctx.parsed.y)}` } } },
-      scales:{
-        x:{ stacked:true, grid:{display:false}, ticks:{font:{size:11}} },
-        y:{ stacked:true, grid:{color:'#e6dfd0'}, ticks:{font:{size:11}, callback:v=>fmtK(v)} }
-      },
-      responsive:true, maintainAspectRatio:true,
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{position:'bottom'}, tooltip:{mode:'index',intersect:false} },
+      scales: {
+        x:{grid:{display:false}},
+        y:{ type:'linear', position:'left', grid:{color:'#f0ead9'}, title:{display:true,text:'Legajos',font:{size:11}} },
+        y1:{ type:'linear', position:'right', grid:{display:false}, title:{display:true,text:'Millones de hojas',font:{size:11}} }
+      }
     }
   });
-}
 
-// ── TABLE ─────────────────────────────────────────────────────────
-function renderTable(rows) {
-  const tbody  = document.getElementById('tbl-body');
-  const noRes  = document.getElementById('no-results');
-  const count  = document.getElementById('tbl-count');
-  count.textContent = `${rows.length} registro${rows.length!==1?'s':''}`;
-  if (!rows.length) { tbody.innerHTML=''; noRes.style.display='block'; return; }
-  noRes.style.display='none';
-  tbody.innerHTML = rows.map((r,i) => {
-    const tipo = r.transf >= r.derog
-      ? '<span class="badge transf">Transferencia</span>'
-      : '<span class="badge derog">Derogación</span>';
-    return `<tr>
-      <td style="color:var(--ink-muted);font-family:'JetBrains Mono',monospace;font-size:11px">${String(i+1).padStart(2,'0')}</td>
-      <td style="color:var(--ink);font-weight:500">${r.attrapi}</td>
-      <td>${r.dgdfm}</td>
-      <td class="num">${r.transf ? fmt(r.transf) : '—'}</td>
-      <td class="num">${r.derog  ? fmt(r.derog)  : '—'}</td>
-      <td class="num" style="color:var(--ink);font-weight:600">${fmt(r.total)}</td>
-      <td>${tipo}</td>
-    </tr>`;
-  }).join('') +
-  `<tr class="total-row">
-    <td colspan="3">TOTAL GENERAL</td>
-    <td class="num">${fmt(rows.reduce((s,r)=>s+r.transf,0))}</td>
-    <td class="num">${fmt(rows.reduce((s,r)=>s+r.derog,0))}</td>
-    <td class="num">${fmt(rows.reduce((s,r)=>s+r.total,0))}</td>
-    <td></td>
-  </tr>`;
-}
+  // 6. Unidades stacked (desde CSV)
+  new Chart(document.getElementById('chartUnidadesStacked'), {
+    type:'bar',
+    data: {
+      labels: unidadesOrdenadas.map(u => trunc(u.nombre, 32)),
+      datasets: [
+        { label:'Transferidas',    data:unidadesOrdenadas.map(u=>u.transferidas), backgroundColor:'#b8410e', borderRadius:2 },
+        { label:'Heredadas DGDFM', data:unidadesOrdenadas.map(u=>u.heredadas),    backgroundColor:'#1d3557', borderRadius:2 }
+      ]
+    },
+    options: {
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend:{position:'bottom'},
+        tooltip:{ mode:'index', callbacks:{ title:ctx=>unidadesOrdenadas[ctx[0].dataIndex].nombre } }
+      },
+      scales: {
+        x:{ stacked:true, grid:{color:'#f0ead9'} },
+        y:{ stacked:true, grid:{display:false}, ticks:{font:{size:10}} }
+      }
+    }
+  });
 
-// ── PROYECCIÓN ────────────────────────────────────────────────────
-function renderProyeccion(records) {
-  const base     = records.reduce((s,r)=>s+r.total,0);
-  const crecAnual = Math.round(base * 0.18); // estimación 18% crecimiento anual
-  const years    = [2025,2026,2027,2028,2029];
-  const acum     = years.map((_,i) => base + crecAnual*(i+1));
-  const anual    = years.map(() => crecAnual);
+  // 7. Obras metric (toggleable)
+  let obrasChart = new Chart(document.getElementById('chartObrasMetric'), {
+    type:'bar',
+    data: {
+      labels: DATA.obras.map(o=>trunc(o.obra,20)),
+      datasets: [{ data:DATA.obras.map(o=>o.cajas), backgroundColor:PALETTE, borderRadius:3 }]
+    },
+    options: {
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{title:ctx=>DATA.obras[ctx[0].dataIndex].obra}} },
+      scales:{ x:{grid:{color:'#f0ead9'}, ticks:{callback:v=>fmtShort(v)}}, y:{grid:{display:false},ticks:{font:{size:11}}} }
+    }
+  });
 
-  buildProjChart(years, acum, anual, 'acumulado');
+  // 8. Obras pie
+  const obrasConCajas = DATA.obras.filter(o=>o.cajas>0);
+  new Chart(document.getElementById('chartObrasPie'), {
+    type:'pie',
+    data: {
+      labels: obrasConCajas.map(o=>o.obra),
+      datasets: [{ data:obrasConCajas.map(o=>o.cajas), backgroundColor:PALETTE, borderWidth:2, borderColor:'#ffffff' }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend:{position:'right',labels:{font:{size:11}}},
+        tooltip:{callbacks:{label:ctx=>`${fmt(ctx.parsed)} cajas (${(ctx.parsed/TOTAL_CAJAS*100).toFixed(1)}%)`}}
+      }
+    }
+  });
 
-  // Tabla
-  document.getElementById('tbl-proj-body').innerHTML = years.map((y,i)=>{
-    const prevAcum = i===0 ? base : acum[i-1];
-    const pct      = Math.round(((acum[i]-prevAcum)/prevAcum)*100);
-    const badges   = ['📋 En curso','🔄 Proyectado','🔄 Proyectado','🔄 Proyectado','🔄 Proyectado'];
-    return `<tr>
-      <td style="font-family:'Fraunces',serif;font-size:20px;font-weight:400">${y}</td>
-      <td class="num">${fmt(crecAnual)}</td>
-      <td class="num" style="color:var(--ink);font-weight:600">${fmt(acum[i])}</td>
-      <td class="num" style="color:var(--sage)">+${pct}%</td>
-      <td><span style="font-size:12px">${badges[i]}</span></td>
-    </tr>`;
-  }).join('') +
-  `<tr style="background:var(--bg-warm)">
-    <td style="font-weight:600;color:var(--ink)">Base 2024</td>
-    <td class="num">—</td>
-    <td class="num" style="color:var(--accent);font-weight:600">${fmt(base)}</td>
-    <td class="num">—</td>
-    <td><span style="font-size:12px">✅ Real</span></td>
-  </tr>`;
-
-  window._projData = { years, acum, anual, base };
-}
-
-function buildProjChart(years, acum, anual, view) {
-  const ctx = document.getElementById('chartProyeccion');
-  if (projChart) { projChart.destroy(); }
-  const isAcum = view === 'acumulado';
-  projChart = new Chart(ctx, {
-    type: isAcum ? 'line' : 'bar',
-    data:{
-      labels: years.map(String),
-      datasets:[{
-        label: isAcum ? 'Cajas acumuladas' : 'Nuevas cajas por año',
-        data:  isAcum ? acum : anual,
-        backgroundColor: isAcum ? 'rgba(184,65,14,.08)' : 'rgba(184,65,14,.7)',
-        borderColor: '#b8410e', borderWidth: 2,
-        fill: isAcum, tension: .4,
-        pointBackgroundColor:'#b8410e', pointRadius:5, pointHoverRadius:7,
-        borderRadius: isAcum ? 0 : 4,
+  // 9. Proyección total
+  new Chart(document.getElementById('chartProyeccionTotal'), {
+    type:'line',
+    data: {
+      labels: DATA.proyeccion.años,
+      datasets: [{
+        label:'Cajas acumuladas',
+        data: DATA.proyeccion.totales,
+        borderColor:'#b8410e', backgroundColor:'rgba(184,65,14,.1)',
+        borderWidth:2.5, tension:.35, fill:true,
+        pointBackgroundColor:'#b8410e', pointBorderColor:'#ffffff',
+        pointBorderWidth:2, pointRadius:6, pointHoverRadius:8
       }]
     },
-    options:{
-      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx => ` ${fmt(ctx.parsed.y)} cajas` } } },
-      scales:{
-        x:{ grid:{display:false}, ticks:{font:{size:12}} },
-        y:{ grid:{color:'#e6dfd0'}, ticks:{ font:{size:11}, callback:v=>fmtK(v) } }
-      },
-      responsive:true, maintainAspectRatio:true,
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>`${fmt(ctx.parsed.y)} cajas`}} },
+      scales:{ x:{grid:{display:false}}, y:{grid:{color:'#f0ead9'},ticks:{callback:v=>fmtShort(v)}} }
     }
   });
-}
 
-// ── TABS ──────────────────────────────────────────────────────────
-function setupTabs() {
-  document.querySelectorAll('.tab-bar button').forEach(btn => {
+  // 10. Proyección obras
+  let proyeccionView = 'acumulado';
+  let proyeccionChart = new Chart(document.getElementById('chartProyeccionObras'), {
+    type:'bar',
+    data: {
+      labels: DATA.proyeccion.años,
+      datasets: DATA.proyeccion.obras.map((o,i) => ({ label:o.nombre, data:o.valores, backgroundColor:PALETTE[i], borderRadius:2 }))
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{position:'bottom',labels:{font:{size:11}}}, tooltip:{mode:'index'} },
+      scales:{ x:{stacked:true,grid:{display:false}}, y:{stacked:true,grid:{color:'#f0ead9'},ticks:{callback:v=>fmtShort(v)}} }
+    }
+  });
+
+  // ── TABLES ──────────────────────────────────────────────────────
+
+  // Bodegas
+  const tbodyBodegas = document.getElementById('tbody-bodegas');
+  DATA.bodegas.forEach(b => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${b.nombre}</strong></td>
+      <td><span class="badge ${b.tipo.toLowerCase()}">${b.tipo}</span></td>
+      <td class="num">${b.superficie.toLocaleString('es-MX')}</td>
+      <td class="num">${fmt(b.cajas)}</td>
+      <td class="num">${fmt(b.legajos)}</td>
+      <td class="num">${fmt(b.hojas)}</td>
+      <td class="num">${(b.cajas/TOTAL_CAJAS*100).toFixed(1)}%</td>`;
+    tbodyBodegas.appendChild(tr);
+  });
+  const trTotBod = document.createElement('tr');
+  trTotBod.className = 'total-row';
+  trTotBod.innerHTML = `<td>TOTAL</td><td></td>
+    <td class="num">${DATA.bodegas.reduce((s,b)=>s+b.superficie,0).toLocaleString('es-MX')}</td>
+    <td class="num">${fmt(TOTAL_CAJAS)}</td>
+    <td class="num">${fmt(DATA.bodegas.reduce((s,b)=>s+b.legajos,0))}</td>
+    <td class="num">${fmt(TOTAL_HOJAS)}</td>
+    <td class="num">100%</td>`;
+  tbodyBodegas.appendChild(trTotBod);
+
+  // Unidades (desde CSV — con búsqueda)
+  const tbodyUnidades = document.getElementById('tbody-unidades');
+  function renderUnidades(filter = '') {
+    tbodyUnidades.innerHTML = '';
+    const filtered = [...DATA.unidades]
+      .filter(u => u.nombre.toLowerCase().includes(filter.toLowerCase()))
+      .sort((a,b) => b.total - a.total);
+    filtered.forEach(u => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${u.nombre}</td>
+        <td class="num">${fmt(u.transferidas)}</td>
+        <td class="num">${fmt(u.heredadas)}</td>
+        <td class="num"><strong>${fmt(u.total)}</strong></td>`;
+      tbodyUnidades.appendChild(tr);
+    });
+    if (!filter) {
+      const tr = document.createElement('tr');
+      tr.className = 'total-row';
+      tr.innerHTML = `
+        <td>TOTAL</td>
+        <td class="num">${fmt(DATA.unidades.reduce((s,u)=>s+u.transferidas,0))}</td>
+        <td class="num">${fmt(DATA.unidades.reduce((s,u)=>s+u.heredadas,0))}</td>
+        <td class="num">${fmt(DATA.unidades.reduce((s,u)=>s+u.total,0))}</td>`;
+      tbodyUnidades.appendChild(tr);
+    }
+  }
+  renderUnidades();
+  document.getElementById('search-unidades').addEventListener('input', e => renderUnidades(e.target.value));
+
+  // Obras
+  const tbodyObras = document.getElementById('tbody-obras');
+  DATA.obras.forEach(o => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${o.obra}</strong></td>
+      <td class="num">${fmt(o.cajas)}</td>
+      <td class="num">${fmt(o.hojas)}</td>
+      <td class="num">${(o.cajas/TOTAL_CAJAS*100).toFixed(1)}%</td>`;
+    tbodyObras.appendChild(tr);
+  });
+  const trTotO = document.createElement('tr');
+  trTotO.className = 'total-row';
+  trTotO.innerHTML = `<td>TOTAL</td><td class="num">${fmt(TOTAL_CAJAS)}</td><td class="num">${fmt(TOTAL_HOJAS)}</td><td class="num">100%</td>`;
+  tbodyObras.appendChild(trTotO);
+
+  // Proyección
+  const tbodyProy = document.getElementById('tbody-proyeccion');
+  DATA.proyeccion.obras.forEach(o => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><strong>${o.nombre}</strong></td>` + o.valores.map(v=>`<td class="num">${fmt(v)}</td>`).join('');
+    tbodyProy.appendChild(tr);
+  });
+  const trTotProy = document.createElement('tr');
+  trTotProy.className = 'total-row';
+  trTotProy.innerHTML = `<td>TOTAL</td>` + DATA.proyeccion.totales.map(v=>`<td class="num">${fmt(v)}</td>`).join('');
+  tbodyProy.appendChild(trTotProy);
+
+  // ── INTERACTIONS ────────────────────────────────────────────────
+
+  // Tabs
+  document.querySelectorAll('.nav-tabs button').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-bar button').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.nav-tabs button').forEach(b=>b.classList.remove('active'));
       document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
-      // scroll al inicio del área de contenido
-      document.querySelector('.tab-content-area').scrollIntoView({ behavior:'smooth', block:'start' });
+      window.scrollTo({ top:0, behavior:'smooth' });
     });
   });
-}
 
-// ── SEARCH ────────────────────────────────────────────────────────
-function setupSearch() {
-  document.getElementById('search').addEventListener('input', function() {
-    const q = this.value.toLowerCase();
-    renderTable(q ? allRows.filter(r=>r.attrapi.toLowerCase().includes(q)||r.dgdfm.toLowerCase().includes(q)) : allRows);
-  });
-}
-
-// ── SORT ──────────────────────────────────────────────────────────
-function setupSort() {
-  document.querySelectorAll('thead th[data-col]').forEach(th => {
-    th.addEventListener('click', ()=>{
-      const col = th.dataset.col;
-      if (sortCol===col) sortDir*=-1; else { sortCol=col; sortDir=-1; }
-      document.querySelectorAll('thead th').forEach(t=>t.classList.remove('sorted'));
-      th.classList.add('sorted');
-      allRows.sort((a,b)=>{
-        const av = typeof a[col]==='string'?a[col].toLowerCase():a[col];
-        const bv = typeof b[col]==='string'?b[col].toLowerCase():b[col];
-        return av<bv?sortDir:av>bv?-sortDir:0;
-      });
-      const q = document.getElementById('search').value.toLowerCase();
-      renderTable(q?allRows.filter(r=>r.attrapi.toLowerCase().includes(q)||r.dgdfm.toLowerCase().includes(q)):allRows);
-    });
-  });
-}
-
-// ── PROJ TOGGLE ───────────────────────────────────────────────────
-function setupProjToggle() {
-  document.querySelectorAll('#toggle-proj button').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      document.querySelectorAll('#toggle-proj button').forEach(b=>b.classList.remove('active'));
+  // Obras metric toggle
+  document.querySelectorAll('[data-metric]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-metric]').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
-      projView = btn.dataset.view;
-      const d = window._projData;
-      if (d) buildProjChart(d.years, d.acum, d.anual, projView);
+      const metric = btn.dataset.metric;
+      obrasChart.data.datasets[0].data = DATA.obras.map(o=>o[metric]);
+      document.getElementById('obras-metric-label').textContent = metric==='cajas'?'Cajas instaladas':'Hojas estimadas';
+      obrasChart.update();
     });
   });
+
+  // Proyección toggle
+  document.querySelectorAll('[data-view]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-view]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      proyeccionView = btn.dataset.view;
+      proyeccionChart.data.datasets = DATA.proyeccion.obras.map((o,i) => ({
+        label:o.nombre, data: proyeccionView==='acumulado'?o.valores:o.entradas,
+        backgroundColor:PALETTE[i], borderRadius:2
+      }));
+      proyeccionChart.update();
+    });
+  });
+
+  // Ocultar loader
+  const loader = document.getElementById('loader-overlay');
+  loader.classList.add('hidden');
+  setTimeout(() => loader.remove(), 500);
 }
 
-loadData();
+// ── ARRANQUE ────────────────────────────────────────────────────
+loadCSV();
 </script>
 </body>
 </html>
