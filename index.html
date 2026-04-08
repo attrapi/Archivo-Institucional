@@ -144,10 +144,37 @@
     .kpi-meta { font-size: 11px; color: var(--ink-muted); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
     .kpi-meta span { color: var(--accent); font-weight: 500; }
 
+    /* ── TAB CONTENT AREA ── */
+    .tab-content-area {
+      border-top: 2px solid var(--border-strong);
+      background: var(--bg-warm);
+      padding-top: 0;
+      min-height: 60vh;
+    }
+    .tab-bar {
+      max-width: 1400px; margin: 0 auto;
+      padding: 0 40px;
+      display: flex; gap: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-bar button {
+      background: none; border: none; border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+      color: var(--ink-muted); padding: 14px 20px;
+      cursor: pointer; transition: all .2s; letter-spacing: .01em;
+    }
+    .tab-bar button:hover { color: var(--ink); }
+    .tab-bar button.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+
     /* ── PANELS ── */
     .tab-panel { display: none; }
-    .tab-panel.active { display: block; animation: fadeUp .35s ease both; }
-    @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .tab-panel.active { display: block; animation: tabSlide .3s cubic-bezier(.4,0,.2,1) both; }
+    .tab-panel section.panel:first-child { padding-top: 40px; }
+    @keyframes tabSlide {
+      from { opacity: 0; transform: translateX(16px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
 
     /* ── SECTION ── */
     section.panel {
@@ -285,10 +312,8 @@
         <small>Archivo de Concentración</small>
       </div>
     </div>
-    <nav class="nav-tabs">
-      <button class="active" data-tab="resumen">Resumen</button>
-      <button data-tab="unidades">Unidades</button>
-      <button data-tab="proyeccion">Proyección</button>
+    <nav class="nav-tabs" style="opacity:.5;font-size:11px;letter-spacing:.05em;pointer-events:none">
+      Archivo Institucional ATTRAPI · DGDFM
     </nav>
     <div class="topbar-right" id="topbar-date">ACT · —</div>
   </div>
@@ -309,22 +334,19 @@
       <div class="hero-tag">DGDFM · Programa de Regularización 2025–2026</div>
       <h1>Estado del <em>archivo</em><br>de concentración</h1>
       <p class="hero-desc">
-        Seguimiento del acervo documental de la <strong>Agencia Reguladora del Transporte Ferroviario (ATTRAPI)</strong>
-        transferido a la DGDFM. Datos actualizados en tiempo real desde la hoja de concentración oficial.
+        Seguimiento del acervo documental de la
+        <strong>Agencia Reguladora del Transporte Ferroviario (ATTRAPI)</strong>
+        transferido a la DGDFM.
       </p>
     </div>
-    <div class="hero-stats" id="hero-stats">
+    <div class="hero-stats">
       <div class="hero-stat-item">
         <div class="hero-stat-num" id="hs-total">—</div>
-        <div class="hero-stat-label">Cajas totales en archivo</div>
+        <div class="hero-stat-label">Cajas totales</div>
       </div>
       <div class="hero-stat-item">
         <div class="hero-stat-num" id="hs-unidades">—</div>
-        <div class="hero-stat-label">Unidades ATTRAPI registradas</div>
-      </div>
-      <div class="hero-stat-item">
-        <div class="hero-stat-num" id="hs-pct">—%</div>
-        <div class="hero-stat-label">Porcentaje transferido</div>
+        <div class="hero-stat-label">Unidades ATTRAPI</div>
       </div>
     </div>
   </div>
@@ -353,6 +375,14 @@
         <div class="kpi-meta">Cajas recibidas de DGDFM</div>
       </div>
     </div>
+  </div>
+
+  <!-- TAB BAR -->
+  <div class="tab-content-area">
+  <div class="tab-bar">
+    <button class="active" data-tab="resumen">Resumen general</button>
+    <button data-tab="unidades">Unidades ATTRAPI</button>
+    <button data-tab="proyeccion">Proyección 2025–2029</button>
   </div>
 
   <!-- ═══════════ TAB: RESUMEN ═══════════ -->
@@ -465,6 +495,7 @@
     </section>
   </div>
 
+  </div><!-- /tab-content-area -->
 </div><!-- /main-content -->
 
 <footer>
@@ -516,11 +547,17 @@ function processData(rows) {
   for (const row of rows.slice(1)) {
     const attrapi = (row[0]||'').trim();
     const dgdfm   = (row[1]||'').trim();
-    const transf  = toNum(row[2]);
-    const derog   = toNum(row[3]);
     const total   = toNum(row[4]);
+
+    // Saltar filas vacías o de totales generales (total irreal > 5000 por unidad)
     if (!attrapi && !dgdfm) continue;
-    if (!total && !transf && !derog) continue;
+    if (!total) continue;
+    if (total > 5000) continue; // fila de gran total del sheet
+
+    // transf y derog no pueden superar el total de esa fila
+    const transf = Math.min(toNum(row[2]), total);
+    const derog  = Math.min(toNum(row[3]), total);
+
     records.push({ attrapi: attrapi||dgdfm, dgdfm: dgdfm||'—', transf, derog, total });
   }
 
@@ -740,13 +777,14 @@ function buildProjChart(years, acum, anual, view) {
 
 // ── TABS ──────────────────────────────────────────────────────────
 function setupTabs() {
-  document.querySelectorAll('.nav-tabs button').forEach(btn => {
+  document.querySelectorAll('.tab-bar button').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.nav-tabs button').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.tab-bar button').forEach(b=>b.classList.remove('active'));
       document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
-      window.scrollTo({ top: 0, behavior:'smooth' });
+      // scroll al inicio del área de contenido
+      document.querySelector('.tab-content-area').scrollIntoView({ behavior:'smooth', block:'start' });
     });
   });
 }
