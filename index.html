@@ -714,7 +714,18 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
     data:{ labels:D.bodegas.map(b=>b.nombre),
       datasets:[{ data:D.bodegas.map(b=>b.cajas), backgroundColor:D.bodegas.map(b=>b.tipo==='Propio'?'#b8410e':'#1d3557'), borderRadius:3 }] },
     options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>`${fmt(ctx.parsed.y)} cajas`}} },
+      layout:{ padding:{ top:24 } },
+      plugins:{
+        legend:{display:false},
+        tooltip:{enabled:false},
+        datalabels:{
+          display:true,
+          anchor:'end', align:'top',
+          color:'#4a4036',
+          font:{ family:"'DM Sans',sans-serif", size:11, weight:'600' },
+          formatter: v => fmt(v)
+        }
+      },
       scales:{ x:{grid:{display:false}}, y:{grid:{color:'#f0ead9'}} } }
   });
 
@@ -722,11 +733,18 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
     type:'bar',
     data:{ labels:D.bodegas.map(b=>b.nombre),
       datasets:[
-        { label:'Legajos', data:D.bodegas.map(b=>b.legajos), backgroundColor:'#c8932b', yAxisID:'y', borderRadius:3 },
-        { label:'Hojas (M)', data:D.bodegas.map(b=>+(b.hojas/1e6).toFixed(2)), backgroundColor:'#6b8e5a', type:'line', yAxisID:'y1', tension:.3, borderColor:'#6b8e5a', pointBackgroundColor:'#6b8e5a', pointRadius:5, borderRadius:0 }
+        { label:'Legajos', data:D.bodegas.map(b=>b.legajos), backgroundColor:'#c8932b', yAxisID:'y', borderRadius:3,
+          datalabels:{ display:true, anchor:'end', align:'top', color:'#c8932b', font:{ family:"'DM Sans',sans-serif", size:10, weight:'600' }, formatter: v => fmt(v) } },
+        { label:'Hojas (M)', data:D.bodegas.map(b=>+(b.hojas/1e6).toFixed(2)), backgroundColor:'#6b8e5a', type:'line', yAxisID:'y1', tension:.3, borderColor:'#6b8e5a', pointBackgroundColor:'#6b8e5a', pointRadius:5, borderRadius:0,
+          datalabels:{ display:true, anchor:'end', align:'top', color:'#6b8e5a', font:{ family:"'DM Sans',sans-serif", size:10, weight:'600' }, formatter: v => v+'M' } }
       ] },
     options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{position:'bottom'}, tooltip:{mode:'index',intersect:false} },
+      layout:{ padding:{ top:24 } },
+      plugins:{
+        legend:{position:'bottom'},
+        tooltip:{enabled:false},
+        datalabels:{ display:false }
+      },
       scales:{ x:{grid:{display:false}}, y:{type:'linear',position:'left',grid:{color:'#f0ead9'},title:{display:true,text:'Legajos',font:{size:11}}},
                y1:{type:'linear',position:'right',grid:{display:false},title:{display:true,text:'Millones de hojas',font:{size:11}}} } }
   });
