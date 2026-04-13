@@ -831,9 +831,9 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
         { label:'Transferidas',    data:unidOrd.map(u=>u.transferidas), backgroundColor:'#b8410e', borderRadius:2 },
         { label:'Heredadas DGDFM', data:unidOrd.map(u=>u.heredadas),    backgroundColor:'#1d3557', borderRadius:2 }
       ] },
-    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    options:{ responsive:true, maintainAspectRatio:false,
       plugins:{ legend:{position:'bottom'}, tooltip:{mode:'index', callbacks:{title:ctx=>unidOrd[ctx[0].dataIndex].nombre}} },
-      scales:{ x:{stacked:true,grid:{color:'#f0ead9'}}, y:{stacked:true,grid:{display:false},ticks:{font:{size:10}}} } }
+      scales:{ x:{stacked:true,grid:{display:false},ticks:{font:{size:10},maxRotation:45,minRotation:45}}, y:{stacked:true,grid:{color:'#f0ead9'},ticks:{callback:v=>fmtS(v)}} } }
   });
 
   document.getElementById('unidades-sub').textContent = `${D.unidades.length} unidades del ARTF`;
