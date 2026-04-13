@@ -154,6 +154,19 @@ tr.total-row:hover td{background:var(--ink-soft)}
 footer{max-width:1400px;margin:60px auto 0;padding:36px 40px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--ink-muted)}
 .foot-brand{font-family:'Fraunces',serif;font-size:14px;color:var(--ink-soft)}
 
+/* TANK CARDS */
+.tank-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:16px;margin-bottom:20px}
+.tank-card{background:var(--bg-e);border:1px solid var(--border);border-radius:4px;padding:16px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;box-shadow:var(--sh-sm)}
+.tank-name{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink);text-align:center}
+.tank-wrap{width:52px;height:120px;border:2px solid var(--border);border-radius:4px;background:var(--bg-w);position:relative;overflow:hidden}
+.tank-fill{position:absolute;bottom:0;left:0;width:100%;background:linear-gradient(to top,#b8410e,#d97757);border-radius:2px;transition:height 1.2s cubic-bezier(.4,0,.2,1)}
+.tank-fill.low{background:linear-gradient(to top,#6b8e5a,#9bbf8a)}
+.tank-fill.mid{background:linear-gradient(to top,#c8932b,#e8b96a)}
+.tank-fill.high{background:linear-gradient(to top,#b8410e,#d97757)}
+.tank-pct{font-family:'Fraunces',serif;font-size:22px;font-weight:400;color:var(--ink);line-height:1}
+.tank-pct span{font-family:'DM Sans',sans-serif;font-size:11px;color:var(--ink-muted)}
+.tank-meta{font-size:10px;color:var(--ink-muted);text-align:center;line-height:1.5}
+
 /* RESPONSIVE */
 @media(max-width:1100px){.hero{grid-template-columns:1fr;gap:28px;padding:44px 20px 30px}.topbar-inner{padding:14px 20px;flex-wrap:wrap}.kpis{grid-template-columns:repeat(3,1fr)}.kpis-wrap{padding:0 20px 36px}section.panel{padding:0 20px}.grid-2,.grid-2-eq,.grid-3{grid-template-columns:1fr}.nav-tabs{order:3;width:100%;overflow-x:auto}footer{padding:24px 20px;flex-direction:column;gap:10px;text-align:center}}
 @media(max-width:600px){.kpis{grid-template-columns:repeat(2,1fr)}.kpi-value{font-size:30px}.sec-head{flex-direction:column;align-items:flex-start;gap:12px}}
@@ -273,6 +286,13 @@ footer{max-width:1400px;margin:60px auto 0;padding:36px 40px;border-top:1px soli
         <div class="sec-title">Inventario por bodega</div>
       </div>
     </div>
+    <!-- Ocupación volumétrica por bodega -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">Ocupación volumétrica por bodega</div>
+      <div class="card-sub">Volumen de cajas (0.35×0.50×0.25 m) vs. capacidad total (superficie × 5.06 m)</div>
+      <div class="tank-grid" id="tank-grid"></div>
+    </div>
+
     <div class="grid-2-eq" style="margin-bottom:20px">
       <div class="card">
         <div class="card-title">Cajas por espacio</div>
@@ -747,6 +767,34 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
       },
       scales:{ x:{grid:{display:false}}, y:{type:'linear',position:'left',grid:{color:'#f0ead9'},title:{display:true,text:'Legajos',font:{size:11}}},
                y1:{type:'linear',position:'right',grid:{display:false},title:{display:true,text:'Millones de hojas',font:{size:11}}} } }
+  });
+
+  // ── TANKS de ocupación volumétrica ───────────────────
+  const ALTURA_BODEGA = 5.06;
+  const VOL_CAJA = 0.35 * 0.50 * 0.25; // 0.04375 m³
+  const tankGrid = document.getElementById('tank-grid');
+  D.bodegas.forEach(b => {
+    if (!b.superficie) return;
+    const volTotal = b.superficie * ALTURA_BODEGA;
+    const volCajas = b.cajas * VOL_CAJA;
+    const pct = Math.min((volCajas / volTotal) * 100, 100);
+    const level = pct < 30 ? 'low' : pct < 65 ? 'mid' : 'high';
+    const card = document.createElement('div');
+    card.className = 'tank-card';
+    card.innerHTML = `
+      <div class="tank-name">${b.nombre}</div>
+      <div class="tank-wrap">
+        <div class="tank-fill ${level}" style="height:0%" data-pct="${pct.toFixed(1)}"></div>
+      </div>
+      <div class="tank-pct">${pct.toFixed(1)}<span>%</span></div>
+      <div class="tank-meta">${fmt(b.cajas)} cajas<br>${volCajas.toFixed(1)} m³ / ${volTotal.toFixed(1)} m³</div>`;
+    tankGrid.appendChild(card);
+  });
+  // Animar llenado al cargar
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.tank-fill').forEach(el => {
+      el.style.height = el.dataset.pct + '%';
+    });
   });
 
   // Tabla bodegas
