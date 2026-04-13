@@ -734,9 +734,9 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
     data:{ labels:D.bodegas.map(b=>b.nombre),
       datasets:[
         { label:'Legajos', data:D.bodegas.map(b=>b.legajos), backgroundColor:'#c8932b', yAxisID:'y', borderRadius:3,
-          datalabels:{ display:true, anchor:'end', align:'top', color:'#c8932b', font:{ family:"'DM Sans',sans-serif", size:10, weight:'600' }, formatter: v => fmt(v) } },
+          datalabels:{ display:true, anchor:'center', align:'center', color:'#fff', font:{ family:"'DM Sans',sans-serif", size:10, weight:'700' }, formatter: v => fmt(v) } },
         { label:'Hojas (M)', data:D.bodegas.map(b=>+(b.hojas/1e6).toFixed(2)), backgroundColor:'#6b8e5a', type:'line', yAxisID:'y1', tension:.3, borderColor:'#6b8e5a', pointBackgroundColor:'#6b8e5a', pointRadius:5, borderRadius:0,
-          datalabels:{ display:true, anchor:'end', align:'top', color:'#6b8e5a', font:{ family:"'DM Sans',sans-serif", size:10, weight:'600' }, formatter: v => v+'M' } }
+          datalabels:{ display:true, anchor:'end', align:'top', offset:6, color:'#6b8e5a', font:{ family:"'DM Sans',sans-serif", size:10, weight:'700' }, formatter: v => v+'M' } }
       ] },
     options:{ responsive:true, maintainAspectRatio:false,
       layout:{ padding:{ top:24 } },
