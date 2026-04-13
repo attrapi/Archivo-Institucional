@@ -650,8 +650,7 @@ function initDashboard(D) {
   const prestado = D.bodegas.filter(b=>b.tipo==='Prestado').length;
   document.getElementById('kpi-bodegas-meta').innerHTML= `<span>${propio} propio</span> · ${prestado} prestados`;
   document.getElementById('kpi-unidades').textContent  = D.unidades.length;
-  document.getElementById('last-upd').textContent      = 'ACT · ' + new Date().toLocaleString('es-MX',{month:'short',year:'numeric'}).toUpperCase();
-  document.getElementById('footer-date').textContent   = new Date().toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'});
+document.getElementById('footer-date').textContent   = new Date().toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'});
 
   // ── RESUMEN ──────────────────────────────────────────
   new Chart(document.getElementById('c-bodegas-donut'), {
