@@ -568,7 +568,7 @@ function parseUnidades(rows) {
   for (const row of rows) {
     const col0  = (row[0]||'').trim();
     const total = toNum(row[5]);
-    if (col0 && !/ESTATUS|DENOMINACI|^\d+\s+transfer/i.test(col0)) grupo = col0;
+    if (col0 && !/ESTATUS|DENOMINACI|^\d+\s+transfer|^TOTAL/i.test(col0)) grupo = col0;
     if (!total || total > 8000) continue;
     const transf = Math.min(toNum(row[3]), total);
     const derog  = Math.min(toNum(row[4]), total);
