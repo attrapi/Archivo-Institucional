@@ -548,12 +548,8 @@ function parseBodegas(rows) {
     if (/prestado/i.test(col0)) { tipo = 'Prestado'; continue; }
     if (/ESPACIO|ENCABEZ|superficie|total|m²|CAJAS|^-+$/i.test(col0)) continue;
 
-    // buscar el valor de cajas en las últimas columnas numéricas
-    let cajas = 0;
-    for (let i = row.length - 1; i >= 1; i--) {
-      const v = toNum(row[i]);
-      if (v > 0 && v < 10000) { cajas = v; break; }
-    }
+    // cajas está en col[6] directamente
+    const cajas = toNum(row[6]);
     if (!cajas) continue;
 
     const superficie = parseFloat(String(row[4]||'').replace(/,/g,'')) || 0;
