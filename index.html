@@ -323,7 +323,8 @@ footer{max-width:1400px;margin:60px auto 0;padding:36px 40px;border-top:1px soli
             <th class="num">Cajas</th>
             <th class="num">Legajos</th>
             <th class="num">Hojas estimadas</th>
-            <th class="num">% del total</th>
+            <th class="num">% Ocupación</th>
+            <th class="num">% Disponible</th>
           </tr></thead>
           <tbody id="tbody-bodegas"></tbody>
         </table>
@@ -816,13 +817,15 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
     tr.innerHTML = `<td class="bold">${b.nombre}</td><td><span class="badge ${b.tipo.toLowerCase()}">${b.tipo}</span></td>
       <td class="num">${b.superficie?b.superficie.toLocaleString('es-MX'):'—'}</td>
       <td class="num">${fmt(b.cajas)}</td><td class="num">${fmt(b.legajos)}</td>
-      <td class="num">${fmt(b.hojas)}</td><td class="num">${(b.cajas/TOTAL_CAJAS*100).toFixed(1)}%</td>`;
+      <td class="num">${fmt(b.hojas)}</td>
+      <td class="num">${b.volumen ? (b.cajas*VOL_CAJA/b.volumen*100).toFixed(1)+'%' : '—'}</td>
+      <td class="num">${b.volumen ? (100 - b.cajas*VOL_CAJA/b.volumen*100).toFixed(1)+'%' : '—'}</td>`;
     tbB.appendChild(tr);
   });
   const trTB = document.createElement('tr'); trTB.className='total-row';
   trTB.innerHTML=`<td>TOTAL</td><td></td><td class="num">${D.bodegas.reduce((s,b)=>s+b.superficie,0).toLocaleString('es-MX')}</td>
     <td class="num">${fmt(TOTAL_CAJAS)}</td><td class="num">${fmt(TOTAL_CAJAS*3)}</td>
-    <td class="num">${fmt(TOTAL_CAJAS*3*800)}</td><td class="num">100%</td>`;
+    <td class="num">${fmt(TOTAL_CAJAS*3*800)}</td><td class="num">—</td><td class="num">—</td>`;
   tbB.appendChild(trTB);
 
   // ── UNIDADES ─────────────────────────────────────────
