@@ -958,12 +958,29 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
       scales:{x:{grid:{display:false}},y:{grid:{color:'#f0ead9'},ticks:{callback:v=>fmtS(v)}}}}
   });
 
+  const mkProyDatasets = (view) => D.proyeccion.obras.map((o,i)=>({
+    label: o.nombre,
+    data: view==='acum' ? o.acum : o.entrada,
+    backgroundColor: PALETTE[i%PALETTE.length],
+    borderRadius: 2
+  }));
+
   let proyView='acum';
   let proyChart=new Chart(document.getElementById('c-proy-obras'),{
     type:'bar',
-    data:{labels:pAnios,datasets:D.proyeccion.obras.map((o,i)=>({label:o.nombre,data:o.acum,backgroundColor:PALETTE[i%PALETTE.length],borderRadius:2}))},
+    data:{labels:pAnios, datasets:mkProyDatasets('acum')},
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{position:'bottom',labels:{font:{size:11}}},tooltip:{mode:'index'}},
+      plugins:{
+        legend:{position:'bottom',labels:{font:{size:11}}},
+        tooltip:{mode:'index'},
+        datalabels:{
+          display: ctx => ctx.dataset.data[ctx.dataIndex] >= 800,
+          anchor:'center', align:'center',
+          color:'#fff',
+          font:{family:"'DM Sans',sans-serif", size:10, weight:'700'},
+          formatter: v => fmtS(v)
+        }
+      },
       scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:'#f0ead9'},ticks:{callback:v=>fmtS(v)}}}}
   });
 
@@ -972,7 +989,7 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
       document.querySelectorAll('[data-view]').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
       proyView=btn.dataset.view;
-      proyChart.data.datasets=D.proyeccion.obras.map((o,i)=>({label:o.nombre,data:proyView==='acum'?o.acum:o.entrada,backgroundColor:PALETTE[i%PALETTE.length],borderRadius:2}));
+      proyChart.data.datasets=mkProyDatasets(proyView);
       proyChart.update();
     });
   });
