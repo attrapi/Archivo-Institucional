@@ -724,9 +724,9 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
   new Chart(document.getElementById('c-unidades-bar'), {
     type:'bar',
     data:{ labels:unidOrd.map(u=>trunc(u.nombre,36)), datasets:[{ data:unidOrd.map(u=>u.total), backgroundColor:'#b8410e', borderRadius:2, barThickness:13 }] },
-    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false}, tooltip:{callbacks:{title:ctx=>unidOrd[ctx[0].dataIndex].nombre, label:ctx=>`${fmt(ctx.parsed.x)} cajas`}} },
-      scales:{ x:{grid:{color:'#f0ead9'},ticks:{callback:v=>fmtS(v)}}, y:{grid:{display:false},ticks:{font:{size:10}}} } }
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{title:ctx=>unidOrd[ctx[0].dataIndex].nombre, label:ctx=>`${fmt(ctx.parsed.y)} cajas`}} },
+      scales:{ x:{grid:{display:false},ticks:{font:{size:10},maxRotation:45,minRotation:45}}, y:{grid:{color:'#f0ead9'},ticks:{callback:v=>fmtS(v)}} } }
   });
 
   const pTotales = D.proyeccion.totales;
