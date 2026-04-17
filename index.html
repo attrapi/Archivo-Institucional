@@ -581,19 +581,26 @@ function parseBodegas(rows) {
 
 function parseUnidades(rows) {
   const result = [];
-  let grupo = '';
+  let unidad = null;
   for (const row of rows) {
-    const col0  = (row[0]||'').trim();
-    const total = toNum(row[5]);
-    if (col0 && !/ESTATUS|DENOMINACI|^\d+\s+transfer|^TOTAL/i.test(col0)) grupo = col0;
-    if (!total || total > 8000) continue;
-    const transf = Math.min(toNum(row[3]), total);
-    const derog  = Math.min(toNum(row[4]), total);
-    const existing = result.find(r => r.nombre === grupo);
-    if (existing) { existing.transferidas+=transf; existing.heredadas+=derog; existing.total+=total; }
-    else result.push({ nombre: grupo||col0||'—', transferidas: transf, heredadas: derog, total });
+    const col0   = (row[0]||'').trim();
+    const total  = toNum(row[5]);
+    const transf = toNum(row[3]);
+    const derog  = toNum(row[4]);
+    if (/^(Unidad de |Secretaria Particular|Dirección General de Seguimiento)/i.test(col0)) {
+      unidad = { nombre: col0.split('(')[0].trim(), transferidas: 0, heredadas: 0, total: 0 };
+      result.push(unidad);
+      continue;
+    }
+    if (/^ESTATUS|^DENOMINACI|^TOTAL DE CAJAS/i.test(col0)) continue;
+    if (!unidad) continue;
+    if (total > 0 && total < 20000) {
+      unidad.transferidas += Math.min(transf, total);
+      unidad.heredadas    += Math.min(derog, total);
+      unidad.total        += total;
+    }
   }
-  return result.filter(r => r.total > 0);
+  return result;
 }
 
 function parseTransferencias(rows) {
