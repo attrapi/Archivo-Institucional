@@ -943,8 +943,20 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
   new Chart(document.getElementById('c-tp-bar'),{
     type:'bar',
     data:{labels:Object.keys(tpSec).map(s=>trunc(s,28)),datasets:[{data:Object.values(tpSec),backgroundColor:PALETTE,borderRadius:3}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${fmt(ctx.parsed.x)} cajas`}}},
-      scales:{x:{grid:{color:'#f0ead9'},ticks:{callback:v=>fmtS(v)}},y:{grid:{display:false},ticks:{font:{size:10}}}}}
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>`${fmt(ctx.parsed.y)} cajas`}},
+        datalabels:{
+          display:true,
+          anchor:'end', align:'end', offset:4,
+          color:'#4a4036',
+          font:{ family:"'DM Sans',sans-serif", size:11, weight:'700' },
+          formatter: v => fmt(v)
+        }
+      },
+      layout:{ padding:{ top:20 } },
+      scales:{x:{grid:{display:false},ticks:{font:{size:10},maxRotation:30,minRotation:30}},y:{grid:{color:'#f0ead9'},ticks:{callback:v=>fmtS(v)}}}}
   });
 
   const tbTP=document.getElementById('tbody-tp');
