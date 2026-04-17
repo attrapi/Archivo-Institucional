@@ -210,7 +210,7 @@ footer{max-width:1400px;margin:60px auto 0;padding:36px 40px;border-top:1px soli
     <button data-tab="bodegas">Bodegas</button>
     <button data-tab="unidades">Transferencias Primarias</button>
     <button data-tab="ts">Transferencias Secundarias</button>
-    <button data-tab="transferencias">Áreas Generadoras</button>
+    <button data-tab="transferencias">Direcciones Extintas</button>
     <button data-tab="tp">UC</button>
     <button data-tab="proyeccion">Proyección</button>
   </div>
@@ -388,10 +388,10 @@ footer{max-width:1400px;margin:60px auto 0;padding:36px 40px;border-top:1px soli
   <section class="panel">
     <div class="sec-head">
       <div>
-        <div class="sec-title">Transferencias Dir. Extintas</div>
-        <div class="sec-sub">Detalle de transferencias por área generadora y bodega</div>
+        <div class="sec-title">Direcciones Extintas</div>
+        <div class="sec-sub">Detalle de transferencias por dirección extinta y bodega</div>
       </div>
-      <input class="search-box" id="search-transf" type="text" placeholder="Buscar área, bodega…">
+      <input class="search-box" id="search-transf" type="text" placeholder="Buscar dirección, bodega…">
     </div>
     <div class="grid-2-eq" style="margin-bottom:20px">
       <div class="card">
@@ -411,7 +411,7 @@ footer{max-width:1400px;margin:60px auto 0;padding:36px 40px;border-top:1px soli
       <div class="tbl-wrap">
         <table>
           <thead><tr>
-            <th>Área generadora</th>
+            <th>Dirección extinta</th>
             <th class="num">Cajas</th>
             <th>Bodega</th>
             <th>Fecha</th>
@@ -615,16 +615,20 @@ function parseUnidades(rows) {
 
 function parseTransferencias(rows) {
   const result = [];
-  let area = '';
+  let direccion = '';
+  const isDirHeader = s => /^(DIRECCIÓN|SUBDIRECCIÓN|UNIDAD|SECRETAR[IÍ]A|COORDINACI[OÓ]N)\b/i.test(s);
+  const isSkipHeader = s => /^(Área generadora|Bodega|G\)|total\s*$)/i.test(s);
   for (const row of rows) {
     const col0 = (row[0]||'').trim();
     const col1 = toNum(row[1]);
     const col2 = (row[2]||'').trim();
     const col3 = (row[3]||'').trim();
     if (!col0 && !col1) continue;
-    if (col0 && !col1) { area = col0; continue; }
+    if (isSkipHeader(col0) && !col1) continue;
+    if (isDirHeader(col0) && !col1) { direccion = col0; continue; }
+    if (col0 && !col1) continue;
     if (!col1) continue;
-    result.push({ area: area||col0, cajas: col1, bodega: col2||'—', fecha: col3||'—' });
+    result.push({ area: direccion||'—', cajas: col1, bodega: col2||'—', fecha: col3||'—' });
   }
   return result;
 }
@@ -936,7 +940,19 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
   new Chart(document.getElementById('c-transf-bodega'),{
     type:'bar',
     data:{labels:Object.keys(bodegaCount),datasets:[{data:Object.values(bodegaCount),backgroundColor:PALETTE,borderRadius:3}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${fmt(ctx.parsed.y)} cajas`}}},
+    options:{responsive:true,maintainAspectRatio:false,
+      layout:{padding:{top:20}},
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>`${fmt(ctx.parsed.y)} cajas`}},
+        datalabels:{
+          display:true,
+          anchor:'end', align:'top', offset:2,
+          color:'#4a4036',
+          font:{ family:"'DM Sans',sans-serif", size:11, weight:'700' },
+          formatter: v => fmt(v)
+        }
+      },
       scales:{x:{grid:{display:false}},y:{grid:{color:'#f0ead9'}}}}
   });
 
@@ -950,7 +966,18 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
   new Chart(document.getElementById('c-transf-fecha'),{
     type:'bar',
     data:{labels:anios,datasets:[{data:anios.map(a=>byAnio[a]),backgroundColor:'#1d3557',borderRadius:3}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${fmt(ctx.parsed.y)} cajas`}}},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>`${fmt(ctx.parsed.y)} cajas`}},
+        datalabels:{
+          display: ctx => ctx.dataset.data[ctx.dataIndex] > 0,
+          anchor:'end', align:'start',
+          color:'#fff',
+          font:{ family:"'DM Sans',sans-serif", size:11, weight:'700' },
+          formatter: v => fmt(v)
+        }
+      },
       scales:{x:{grid:{display:false}},y:{grid:{color:'#f0ead9'}}}}
   });
 
