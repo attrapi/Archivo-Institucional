@@ -978,20 +978,20 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
   D.tp.forEach(t=>{const s=t.seccion.substring(0,40);tpSec[s]=(tpSec[s]||0)+t.cajas;});
   new Chart(document.getElementById('c-tp-bar'),{
     type:'bar',
-    data:{labels:Object.keys(tpSec).map(s=>wrapLabel(s,18)),datasets:[{data:Object.values(tpSec),backgroundColor:PALETTE,borderRadius:3}]},
+    data:{labels:Object.keys(tpSec).map(s=>wrapLabel(s,18)),datasets:[{data:Object.values(tpSec),backgroundColor:PALETTE,borderRadius:3,barPercentage:0.5,categoryPercentage:0.7,maxBarThickness:50}]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{
         legend:{display:false},
         tooltip:{callbacks:{title:ctx=>Object.keys(tpSec)[ctx[0].dataIndex], label:ctx=>`${fmt(ctx.parsed.y)} cajas`}},
         datalabels:{
           display:true,
-          anchor:'end', align:'end', offset:4,
-          color:'#4a4036',
+          anchor:'end', align:'start', offset:4,
+          color:'#ffffff',
           font:{ family:"'DM Sans',sans-serif", size:11, weight:'700' },
           formatter: v => fmt(v)
         }
       },
-      layout:{ padding:{ top:20 } },
+      layout:{ padding:{ top:10 } },
       scales:{x:{grid:{display:false},ticks:{font:{size:10},maxRotation:0,minRotation:0,autoSkip:false}},y:{grid:{color:'#f0ead9'},ticks:{callback:v=>fmtS(v)}}}}
   });
 
