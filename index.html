@@ -271,10 +271,29 @@ footer{max-width:1400px;margin:60px auto 0;padding:36px 40px;border-top:1px soli
         <div class="chart-wrap"><canvas id="c-unidades-bar"></canvas></div>
       </div>
     </div>
-    <div class="card">
-      <div class="card-title">Proyección acumulada 2025–2030</div>
-      <div class="card-sub">Total de cajas proyectadas</div>
-      <div class="chart-wrap short"><canvas id="c-proy-resumen"></canvas></div>
+    <div class="grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <div class="card-title">Ocupación volumétrica por bodega</div>
+        <div class="card-sub">Volumen de cajas vs. volumen disponible</div>
+        <div class="tank-grid" id="tank-grid-res"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Ocupación volumétrica · Contenedor</div>
+        <div class="card-sub">Volumen de cajas vs. volumen disponible</div>
+        <div class="tank-grid" id="tank-grid-cont-res" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))"></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Proyección 2025–2027</div>
+        <div class="card-sub">Primer trienio</div>
+        <div class="chart-wrap short"><canvas id="c-proy-resumen-a"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Proyección 2028–2030</div>
+        <div class="card-sub">Segundo trienio</div>
+        <div class="chart-wrap short"><canvas id="c-proy-resumen-b"></canvas></div>
+      </div>
     </div>
   </section>
 </div>
@@ -752,10 +771,10 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
   });
 
   const pTotales = D.proyeccion.totales;
-  new Chart(document.getElementById('c-proy-resumen'), {
+  const mkProyHalf = (canvasId, labels, data) => new Chart(document.getElementById(canvasId), {
     type:'line',
-    data:{ labels:['Existencia','2025','2026','2027','2028','2029','2030'],
-      datasets:[{ label:'Cajas', data:[pTotales.existencia,pTotales.y25,pTotales.y26,pTotales.y27,pTotales.y28,pTotales.y29,pTotales.y30],
+    data:{ labels,
+      datasets:[{ label:'Cajas', data,
         borderColor:'#b8410e', backgroundColor:'rgba(184,65,14,.08)', borderWidth:2, tension:.35, fill:true,
         pointBackgroundColor:'#b8410e', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:5 }] },
     options:{ responsive:true, maintainAspectRatio:false,
@@ -773,6 +792,12 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
       },
       scales:{ x:{grid:{display:false}}, y:{grid:{color:'#f0ead9'},ticks:{callback:v=>fmtS(v)}} } }
   });
+  mkProyHalf('c-proy-resumen-a',
+    ['Existencia','2025','2026','2027'],
+    [pTotales.existencia,pTotales.y25,pTotales.y26,pTotales.y27]);
+  mkProyHalf('c-proy-resumen-b',
+    ['2027','2028','2029','2030'],
+    [pTotales.y27,pTotales.y28,pTotales.y29,pTotales.y30]);
 
   // ── BODEGAS ──────────────────────────────────────────
   new Chart(document.getElementById('c-bodegas-bar'), {
@@ -817,8 +842,10 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
 
   // ── TANKS de ocupación volumétrica ───────────────────
   const VOL_CAJA = 0.35 * 0.50 * 0.25; // 0.04375 m³
-  const tankGrid     = document.getElementById('tank-grid');
-  const tankGridCont = document.getElementById('tank-grid-cont');
+  const tankGrid       = document.getElementById('tank-grid');
+  const tankGridCont   = document.getElementById('tank-grid-cont');
+  const tankGridRes    = document.getElementById('tank-grid-res');
+  const tankGridContRes= document.getElementById('tank-grid-cont-res');
 
   function makeTankCard(b) {
     const volTotal = b.volumen;
@@ -841,6 +868,9 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
     if (!b.volumen) return;
     const esContenedor = /contenedor/i.test(b.nombre);
     (esContenedor ? tankGridCont : tankGrid).appendChild(makeTankCard(b));
+    if (tankGridRes && tankGridContRes) {
+      (esContenedor ? tankGridContRes : tankGridRes).appendChild(makeTankCard(b));
+    }
   });
   // Animar llenado al cargar
   requestAnimationFrame(() => {
