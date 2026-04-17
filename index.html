@@ -178,13 +178,35 @@ body.report-mode .tab-panel{display:none !important}
 body.report-mode #tab-resumen{display:block !important}
 
 @media print{
-  @page{size:A4 landscape;margin:10mm}
-  .tab-bar-wrap,#btn-report,#loader{display:none !important}
+  @page{size:A4 landscape;margin:6mm}
+  html,body{height:auto !important}
+  .tab-bar-wrap,#btn-report,#loader,header.topbar,footer,.hero{display:none !important}
   .tab-panel{display:none !important}
-  #tab-resumen{display:block !important}
-  body{background:#fff}
-  .card,.panel{box-shadow:none !important;break-inside:avoid;page-break-inside:avoid}
-  #tab-resumen, #tab-resumen *{break-inside:avoid;page-break-inside:avoid}
+  #tab-resumen{display:block !important;page-break-after:avoid}
+  body{background:#fff;font-size:9px}
+  .kpis-wrap{padding:4px 16px 0 !important;border-bottom:1px solid var(--border-s) !important}
+  .kpis{gap:8px !important}
+  .kpi{padding:4px !important}
+  .kpi-label{font-size:8px !important}
+  .kpi-value{font-size:14px !important}
+  .kpi-meta{font-size:7px !important;margin-top:2px !important}
+  section.panel{padding:4px 16px !important}
+  .sec-head{margin:2px 0 4px !important}
+  .sec-title{font-size:12px !important}
+  .sec-sub{font-size:9px !important}
+  .grid-2{gap:6px !important;margin-bottom:6px !important}
+  .card{padding:6px !important;box-shadow:none !important;break-inside:avoid;page-break-inside:avoid}
+  .card-title{font-size:10px !important;margin-bottom:2px !important}
+  .card-sub{font-size:8px !important;margin-bottom:4px !important}
+  .chart-wrap,.chart-wrap.short{height:130px !important}
+  .tank-grid{grid-template-columns:repeat(auto-fill,minmax(70px,1fr)) !important;gap:4px !important;margin:0 !important}
+  .tank-card{padding:4px 2px !important;gap:2px !important}
+  .tank-name{font-size:7px !important}
+  .tank-wrap{width:24px !important;height:60px !important}
+  .tank-pct{font-size:12px !important}
+  .tank-pct span{font-size:7px !important}
+  .tank-meta{font-size:6px !important}
+  canvas{max-height:130px !important}
 }
 </style>
 </head>
