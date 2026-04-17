@@ -170,6 +170,21 @@ footer{max-width:1400px;margin:60px auto 0;padding:36px 40px;border-top:1px soli
 /* RESPONSIVE */
 @media(max-width:1100px){.hero{grid-template-columns:1fr;gap:28px;padding:44px 20px 30px}.topbar-inner{padding:14px 20px;flex-wrap:wrap}.kpis{grid-template-columns:repeat(3,1fr)}.kpis-wrap{padding:0 20px 36px}section.panel{padding:0 20px}.grid-2,.grid-2-eq,.grid-3{grid-template-columns:1fr}.nav-tabs{order:3;width:100%;overflow-x:auto}footer{padding:24px 20px;flex-direction:column;gap:10px;text-align:center}}
 @media(max-width:600px){.kpis{grid-template-columns:repeat(2,1fr)}.kpi-value{font-size:30px}.sec-head{flex-direction:column;align-items:flex-start;gap:12px}}
+
+/* MODO REPORTE: se activa al imprimir o con clase .report-mode para mostrar todas las pestañas sin el menú */
+body.report-mode .tab-bar-wrap,
+body.report-mode #btn-report,
+body.report-mode .search-box{display:none !important}
+body.report-mode .tab-panel{display:block !important;page-break-before:auto}
+body.report-mode .tab-panel + .tab-panel{margin-top:24px;padding-top:24px;border-top:2px solid var(--border-s)}
+
+@media print{
+  .tab-bar-wrap,#btn-report,#loader,.search-box{display:none !important}
+  .tab-panel{display:block !important;page-break-inside:avoid}
+  .tab-panel + .tab-panel{page-break-before:always}
+  body{background:#fff}
+  .card,.panel{box-shadow:none !important;break-inside:avoid}
+}
 </style>
 </head>
 <body>
@@ -258,6 +273,7 @@ footer{max-width:1400px;margin:60px auto 0;padding:36px 40px;border-top:1px soli
   <section class="panel" style="padding-top:24px">
     <div class="sec-head">
       <div><div class="sec-title">Distribución del acervo</div><div class="sec-sub">Bodegas y unidades administrativas</div></div>
+      <button id="btn-report" class="search-box" style="cursor:pointer;background:#b8410e;color:#fff;border-color:#b8410e;font-weight:700;padding:10px 18px">Generar reporte</button>
     </div>
     <div class="grid-2" style="margin-bottom:20px">
       <div class="card">
@@ -1123,6 +1139,18 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
       window.scrollTo({top:0,behavior:'smooth'});
     });
   });
+
+  // ── REPORTE ──────────────────────────────────────────
+  const btnReport = document.getElementById('btn-report');
+  if (btnReport) {
+    btnReport.addEventListener('click',()=>{
+      document.body.classList.add('report-mode');
+      setTimeout(()=>{
+        window.print();
+        setTimeout(()=>document.body.classList.remove('report-mode'),300);
+      },150);
+    });
+  }
 
   // Ocultar loader
   const loader=document.getElementById('loader');
