@@ -1024,20 +1024,31 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
     type:'bar',
     data:{labels:pAnios, datasets:mkProyDatasets('acum')},
     options:{responsive:true,maintainAspectRatio:false,
+      layout:{padding:{top:28}},
       plugins:{
         legend:{position:'bottom',labels:{font:{size:11}}},
         tooltip:{mode:'index'},
         datalabels:{
-          display: ctx => {
-            const data = ctx.chart.data.datasets.map(d => d.data[ctx.dataIndex] || 0);
-            const total = data.reduce((s,v) => s+v, 0);
-            const v = ctx.dataset.data[ctx.dataIndex] || 0;
-            return v > 0 && total > 0 && (v/total) >= 0.05;
-          },
-          anchor:'center', align:'center',
-          color:'#fff',
-          font:{family:"'DM Sans',sans-serif", size:10, weight:'700'},
-          formatter: v => fmt(v)
+          labels:{
+            value:{
+              display: ctx => {
+                const total = ctx.chart.data.datasets.reduce((s,d)=>s+(d.data[ctx.dataIndex]||0),0);
+                const v = ctx.dataset.data[ctx.dataIndex] || 0;
+                return v > 0 && total > 0 && (v/total) >= 0.05;
+              },
+              anchor:'center', align:'center',
+              color:'#fff',
+              font:{family:"'DM Sans',sans-serif", size:10, weight:'700'},
+              formatter: v => fmt(v)
+            },
+            total:{
+              display: ctx => ctx.datasetIndex === ctx.chart.data.datasets.length - 1,
+              anchor:'end', align:'top', offset:4,
+              color:'#4a4036',
+              font:{family:"'DM Sans',sans-serif", size:11, weight:'700'},
+              formatter: (_v, ctx) => fmt(ctx.chart.data.datasets.reduce((s,d)=>s+(d.data[ctx.dataIndex]||0),0))
+            }
+          }
         }
       },
       scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:'#f0ead9'},ticks:{callback:v=>fmtS(v)}}}}
