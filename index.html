@@ -11,6 +11,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root {
   --bg:#faf7f2; --bg-e:#fff; --bg-w:#f4efe5;
@@ -1163,15 +1165,56 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
     });
   });
 
-  // ── REPORTE ──────────────────────────────────────────
+  // ── REPORTE PDF ──────────────────────────────────────
   const btnReport = document.getElementById('btn-report');
   if (btnReport) {
-    btnReport.addEventListener('click',()=>{
-      document.body.classList.add('report-mode');
-      setTimeout(()=>{
-        window.print();
-        setTimeout(()=>document.body.classList.remove('report-mode'),300);
-      },150);
+    btnReport.addEventListener('click', async () => {
+      const panel = document.getElementById('tab-resumen');
+      const kpis  = document.querySelector('.kpis-wrap');
+      if (!panel) return;
+      const originalLabel = btnReport.textContent;
+      btnReport.disabled = true;
+      btnReport.textContent = 'Generando…';
+      try {
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'position:fixed;left:-10000px;top:0;width:1400px;background:#faf7f0;padding:20px;font-family:"DM Sans",sans-serif';
+        const kpisClone  = kpis.cloneNode(true);
+        const panelClone = panel.cloneNode(true);
+        kpisClone.style.position = 'static';
+        panelClone.querySelectorAll('#btn-report').forEach(b => b.remove());
+        // Sustituir cada canvas del clon por la imagen del canvas original (Chart.js)
+        const origCanvases  = panel.querySelectorAll('canvas');
+        const cloneCanvases = panelClone.querySelectorAll('canvas');
+        origCanvases.forEach((orig, i) => {
+          const target = cloneCanvases[i];
+          if (!target) return;
+          const img = new Image();
+          img.src = orig.toDataURL('image/png');
+          img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block';
+          target.parentElement.replaceChild(img, target);
+        });
+        wrap.appendChild(kpisClone);
+        wrap.appendChild(panelClone);
+        document.body.appendChild(wrap);
+        const canvas = await html2canvas(wrap, {scale:2, backgroundColor:'#faf7f0', useCORS:true, logging:false});
+        document.body.removeChild(wrap);
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+        const pw = pdf.internal.pageSize.getWidth();
+        const ph = pdf.internal.pageSize.getHeight();
+        const ratio = canvas.width / canvas.height;
+        let w = pw, h = pw / ratio;
+        if (h > ph) { h = ph; w = ph * ratio; }
+        const x = (pw - w) / 2, y = (ph - h) / 2;
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, y, w, h);
+        pdf.save('Reporte_ATTRAPI_Resumen.pdf');
+      } catch (err) {
+        console.error(err);
+        alert('No se pudo generar el reporte: ' + err.message);
+      } finally {
+        btnReport.disabled = false;
+        btnReport.textContent = originalLabel;
+      }
     });
   }
 
