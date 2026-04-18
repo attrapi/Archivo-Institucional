@@ -1170,7 +1170,6 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
   if (btnReport) {
     btnReport.addEventListener('click', async () => {
       const panel = document.getElementById('tab-resumen');
-      const kpis  = document.querySelector('.kpis-wrap');
       if (!panel) return;
       const originalLabel = btnReport.textContent;
       btnReport.disabled = true;
@@ -1178,10 +1177,14 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
       try {
         const wrap = document.createElement('div');
         wrap.style.cssText = 'position:fixed;left:-10000px;top:0;width:1400px;background:#faf7f0;padding:20px;font-family:"DM Sans",sans-serif';
-        const kpisClone  = kpis.cloneNode(true);
+        const header = document.createElement('div');
+        header.style.cssText = 'text-align:center;padding:0 0 14px;margin-bottom:10px;border-bottom:2px solid #d9d2bf';
+        header.innerHTML = '<div style="font-family:\'DM Sans\',sans-serif;font-size:12px;letter-spacing:.12em;color:#8a7e68;text-transform:uppercase;font-weight:700">ATTRAPI · Archivo de Concentración</div>'
+                         + '<h1 style="font-family:\'Fraunces\',serif;font-size:28px;font-weight:400;color:#3d332a;margin:4px 0 0;letter-spacing:-.01em">Estado del archivo <em style="font-style:italic;color:#b8410e">de concentración</em></h1>';
         const panelClone = panel.cloneNode(true);
-        kpisClone.style.position = 'static';
         panelClone.querySelectorAll('#btn-report').forEach(b => b.remove());
+        // Normaliza la kpis-wrap dentro del panel (quita sticky/overlays)
+        panelClone.querySelectorAll('.kpis-wrap').forEach(k => { k.style.position='static'; k.style.padding='0 0 12px'; k.style.borderBottom='none'; });
         // Sustituir cada canvas del clon por la imagen del canvas original (Chart.js)
         const origCanvases  = panel.querySelectorAll('canvas');
         const cloneCanvases = panelClone.querySelectorAll('canvas');
@@ -1193,7 +1196,7 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
           img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block';
           target.parentElement.replaceChild(img, target);
         });
-        wrap.appendChild(kpisClone);
+        wrap.appendChild(header);
         wrap.appendChild(panelClone);
         document.body.appendChild(wrap);
         const canvas = await html2canvas(wrap, {scale:2, backgroundColor:'#faf7f0', useCORS:true, logging:false});
