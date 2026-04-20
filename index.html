@@ -1356,7 +1356,15 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
             label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)} m²`,
             afterBody: ctx => {
               const b = areaDatasets[ctx[0].dataIndex];
-              return [`Superficie total: ${b.superficie.toFixed(1)} m²`, `${fmt(b.cajas)} cajas actuales`];
+              const totalStack = b.ocupado + b.proy + b.disponible;
+              const diff = totalStack - b.superficie;
+              const alerta = diff > 0.5 ? ` (supera por ${diff.toFixed(1)} m²)` : '';
+              return [
+                '────────────',
+                `Superficie total (Ocup + Proy + Disp): ${totalStack.toFixed(1)} m²${alerta}`,
+                `Superficie real del espacio: ${b.superficie.toFixed(1)} m²`,
+                `${fmt(b.cajas)} cajas actuales`
+              ];
             }
           }
         },
