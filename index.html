@@ -253,6 +253,7 @@ body.report-mode #tab-resumen{display:block !important}
     <button data-tab="transferencias">Direcciones Extintas</button>
     <button data-tab="tp">UC</button>
     <button data-tab="proyeccion">Proyección</button>
+    <button data-tab="area">Área apilada</button>
   </div>
 </div>
 
@@ -589,6 +590,23 @@ body.report-mode #tab-resumen{display:block !important}
           <tbody id="tbody-proy"></tbody>
         </table>
       </div>
+    </div>
+  </section>
+</div>
+
+<!-- ═══ TAB: ÁREA APILADA ═══ -->
+<div class="tab-panel" id="tab-area">
+  <section class="panel">
+    <div class="sec-head">
+      <div>
+        <div class="sec-title">Ocupación y proyección por bodega</div>
+        <div class="sec-sub">Superficie ocupada, disponible y proyectada (m²) por espacio</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Área apilada · Bodegas y contenedor</div>
+      <div class="card-sub">Rojo = ocupado · Amarillo = proyección de ocupación · Verde = disponible</div>
+      <div class="chart-wrap tall"><canvas id="c-area-bodegas"></canvas></div>
     </div>
   </section>
 </div>
@@ -1284,6 +1302,51 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
       proyChart.data.datasets=mkProyDatasets(proyView);
       proyChart.update();
     });
+  });
+
+  // ── ÁREA APILADA · Ocupación y proyección por bodega ──
+  const bodArea = D.bodegas.filter(b => b.superficie);
+  const totalCajasActual = bodArea.reduce((s,b)=>s+b.cajas,0);
+  const cajasAdic = Math.max(0, pT.y30 - pT.existencia);
+  const areaDatasets = bodArea.map(b => {
+    const ocupado   = +(b.cajas * AREA_CAJA).toFixed(2);
+    const shareProj = totalCajasActual ? (b.cajas / totalCajasActual) : 0;
+    const proyAdic  = +(cajasAdic * shareProj * AREA_CAJA).toFixed(2);
+    const proyReal  = Math.min(proyAdic, Math.max(0, b.superficie - ocupado));
+    const disponible= +Math.max(0, b.superficie - ocupado - proyReal).toFixed(2);
+    return { nombre:b.nombre, ocupado, proy:proyReal, disponible };
+  });
+  new Chart(document.getElementById('c-area-bodegas'), {
+    type:'line',
+    data:{
+      labels: areaDatasets.map(d => d.nombre),
+      datasets:[
+        { label:'Ocupado',    data:areaDatasets.map(d=>d.ocupado),    backgroundColor:'rgba(184,65,14,.55)',   borderColor:'#b8410e', borderWidth:2, fill:true, tension:.3, pointRadius:3 },
+        { label:'Proyección', data:areaDatasets.map(d=>d.proy),       backgroundColor:'rgba(215,178,48,.55)',  borderColor:'#d7b230', borderWidth:2, fill:true, tension:.3, pointRadius:3 },
+        { label:'Disponible', data:areaDatasets.map(d=>d.disponible), backgroundColor:'rgba(111,156,88,.55)',  borderColor:'#6f9c58', borderWidth:2, fill:true, tension:.3, pointRadius:3 }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ position:'bottom' },
+        tooltip:{
+          callbacks:{
+            label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)} m²`,
+            afterBody: ctx => {
+              const b = bodArea[ctx[0].dataIndex];
+              return [`Superficie total: ${b.superficie.toFixed(1)} m²`, `${fmt(b.cajas)} cajas actuales`];
+            }
+          }
+        },
+        datalabels:{ display:false }
+      },
+      scales:{
+        x:{ grid:{ display:false }, ticks:{ font:{ size:11, weight:'600' }, maxRotation:30, minRotation:30 } },
+        y:{ stacked:true, grid:{ color:'#f0ead9' }, title:{ display:true, text:'m²', font:{ size:11 } }, ticks:{ callback:v=>v+' m²' } }
+      }
+    }
   });
 
   // Tabla proyección
