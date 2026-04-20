@@ -300,16 +300,11 @@ body.report-mode #tab-resumen{display:block !important}
       <div><div class="sec-title">Distribución del acervo</div><div class="sec-sub">Bodegas y unidades administrativas</div></div>
       <button id="btn-report" class="search-box" style="cursor:pointer;background:#b8410e;color:#fff;border-color:#b8410e;font-weight:700;padding:10px 18px">Generar reporte</button>
     </div>
-    <div class="grid-2" style="margin-bottom:20px">
+    <div style="margin-bottom:20px">
       <div class="card">
-        <div class="card-title">Cajas por bodega</div>
-        <div class="card-sub">Composición del archivo físico</div>
-        <div class="chart-wrap"><canvas id="c-bodegas-donut"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Ocupación por superficie</div>
-        <div class="card-sub">Bodegas y contenedor · Huella de cajas (0.175 m²) vs. superficie disponible</div>
-        <div class="tank-grid" id="tank-grid-res"></div>
+        <div class="card-title">Cajas y ocupación por bodega</div>
+        <div class="card-sub">Huella de cajas (0.175 m²) vs. superficie disponible · Número de cajas por espacio</div>
+        <div class="chart-wrap"><canvas id="c-bodegas-super"></canvas></div>
       </div>
     </div>
     <div class="grid-2">
@@ -805,20 +800,53 @@ function initDashboard(D) {
   document.getElementById('kpi-unidades').textContent  = D.unidades.length;
 document.getElementById('footer-date').textContent   = new Date().toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'});
 
-  // ── RESUMEN ──────────────────────────────────────────
-  new Chart(document.getElementById('c-bodegas-donut'), {
-    type:'doughnut',
-    data:{ labels:D.bodegas.map(b=>b.nombre), datasets:[{ data:D.bodegas.map(b=>b.cajas), backgroundColor:PALETTE, borderWidth:2, borderColor:'#fff' }] },
-    options:{ responsive:true, maintainAspectRatio:false, cutout:'62%',
+  // Dimensiones físicas de una caja (usadas en varios gráficos)
+  const VOL_CAJA  = 0.35 * 0.50 * 0.25; // 0.04375 m³
+  const AREA_CAJA = 0.35 * 0.50;        // 0.175 m² (huella)
+
+  // ── RESUMEN · Cajas y ocupación por bodega ──────────
+  const bodSup = D.bodegas.filter(b => b.superficie).sort((a,b)=>b.superficie-a.superficie);
+  new Chart(document.getElementById('c-bodegas-super'), {
+    type:'bar',
+    data:{
+      labels: bodSup.map(b => b.nombre),
+      datasets:[
+        { label:'Huella de cajas (m²)', data: bodSup.map(b => +(b.cajas * AREA_CAJA).toFixed(2)), backgroundColor:'#b8410e', borderRadius:2 },
+        { label:'Disponible (m²)',      data: bodSup.map(b => +Math.max(0, b.superficie - b.cajas * AREA_CAJA).toFixed(2)), backgroundColor:'#d9ccb4', borderRadius:2 }
+      ]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true, maintainAspectRatio:false,
+      layout:{ padding:{ right:70 } },
       plugins:{
-        legend:{position:'right'},
-        tooltip:{enabled:false},
+        legend:{ position:'bottom' },
+        tooltip:{
+          callbacks:{
+            title: ctx => bodSup[ctx[0].dataIndex].nombre,
+            label: ctx => `${ctx.dataset.label}: ${ctx.parsed.x.toFixed(1)} m²`,
+            afterBody: ctx => {
+              const b = bodSup[ctx[0].dataIndex];
+              const pct = (b.cajas * AREA_CAJA / b.superficie * 100).toFixed(1);
+              return [`${fmt(b.cajas)} cajas · ${pct}% ocupado`];
+            }
+          }
+        },
         datalabels:{
-          display:true,
-          color:'#fff',
-          font:{ family:"'DM Sans',sans-serif", size:11, weight:'600' },
-          formatter: v => fmt(v)
+          display: ctx => ctx.datasetIndex === 1,
+          anchor:'end', align:'end', clamp:true,
+          color:'#1a1612',
+          font:{ family:"'DM Sans',sans-serif", size:11, weight:'700' },
+          formatter: (_, ctx) => {
+            const b = bodSup[ctx.dataIndex];
+            const pct = (b.cajas * AREA_CAJA / b.superficie * 100).toFixed(0);
+            return `${fmt(b.cajas)} cajas · ${pct}%`;
+          }
         }
+      },
+      scales:{
+        x:{ stacked:true, grid:{ color:'#f0ead9' }, ticks:{ callback:v=>v+' m²' } },
+        y:{ stacked:true, grid:{ display:false }, ticks:{ font:{ size:12, weight:'600' } } }
       }
     }
   });
@@ -907,11 +935,8 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
   });
 
   // ── TANKS de ocupación (m³ / m²) ─────────────────────
-  const VOL_CAJA  = 0.35 * 0.50 * 0.25; // 0.04375 m³
-  const AREA_CAJA = 0.35 * 0.50;        // 0.175 m² (huella de una caja)
   const tankGrid      = document.getElementById('tank-grid');
   const tankGridCont  = document.getElementById('tank-grid-cont');
-  const tankGridRes   = document.getElementById('tank-grid-res');
   const tankGridM2    = document.getElementById('tank-grid-m2');
   const tankGridM2C   = document.getElementById('tank-grid-m2-cont');
 
@@ -944,11 +969,8 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
     if (!b.volumen) return;
     const esContenedor = /contenedor/i.test(b.nombre);
     (esContenedor ? tankGridCont : tankGrid).appendChild(makeTankCard(b, 'm3'));
-    if (b.superficie) {
-      if (tankGridRes) tankGridRes.appendChild(makeTankCard(b, 'm2'));
-      if (tankGridM2 && tankGridM2C) {
-        (esContenedor ? tankGridM2C : tankGridM2).appendChild(makeTankCard(b, 'm2'));
-      }
+    if (b.superficie && tankGridM2 && tankGridM2C) {
+      (esContenedor ? tankGridM2C : tankGridM2).appendChild(makeTankCard(b, 'm2'));
     }
   });
   requestAnimationFrame(() => {
