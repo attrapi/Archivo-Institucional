@@ -139,19 +139,57 @@ add_par(
 )
 
 add_par('4.3 Franja verde · Disponible', bold=True, size=12, color=GUINDA, space_after=4)
+
+add_par('En palabras simples', bold=True, size=11, color=GRIS, space_after=4)
 add_par(
-    'Es el espacio libre al día de hoy. Se calcula como la diferencia entre la '
-    'superficie total del espacio (dato reportado por el administrador de la bodega '
-    'en la hoja "Bodegas") y lo que ya ocupan las cajas:'
+    'El verde es la superficie libre de la bodega al día de hoy. Es importante '
+    'subrayar que Disponible se calcula ÚNICAMENTE contra lo que las cajas están '
+    'ocupando ahora: la proyección amarilla NO le resta nada al verde. La '
+    'proyección se dibuja apilada sobre el verde, no dentro de él.'
 )
+
+add_par('Fórmula', bold=True, size=11, color=GRIS, space_after=4)
 p = doc.add_paragraph()
 p.paragraph_format.space_after = Pt(4)
 r = p.add_run('    Disponible (m²) = máx(0, superficie_bodega − Ocupado)')
 r.font.size = Pt(11); r.font.bold = True
 add_par(
-    'La función "máx(0, ...)" evita mostrar números negativos si la información '
-    'reportada de cajas excede la superficie registrada (caso raro pero posible '
-    'con almacenamiento en altura).',
+    'La superficie_bodega es el dato físico real reportado en la hoja "Bodegas" '
+    '(el administrador del espacio lo registra). La función "máx(0, ...)" evita '
+    'números negativos si la información reportada de cajas excediera la '
+    'superficie registrada (caso raro, posible con almacenamiento en altura).',
+    italic=True, color=GRIS, size=10
+)
+
+add_par('Ejemplo numérico', bold=True, size=11, color=GRIS, space_after=4)
+add_par(
+    'Bodega con superficie real de 500 m² y 2,000 cajas al día de hoy:',
+    italic=True, color=GRIS, size=10
+)
+p = doc.add_paragraph()
+p.paragraph_format.left_indent = Cm(1)
+p.paragraph_format.space_after = Pt(2)
+r = p.add_run('Ocupado = 2,000 × 0.175 = 350 m²')
+r.font.size = Pt(11); r.font.bold = True
+p = doc.add_paragraph()
+p.paragraph_format.left_indent = Cm(1)
+p.paragraph_format.space_after = Pt(6)
+r = p.add_run('Disponible = 500 − 350 = 150 m²')
+r.font.size = Pt(11); r.font.bold = True; r.font.color.rgb = VERDE
+
+add_par('Qué significa que la suma apilada exceda la superficie real', bold=True, size=11, color=GRIS, space_after=4)
+add_par(
+    'Si la misma bodega recibe una proyección de 606 m² (amarillo), la altura '
+    'total que se pinta en la gráfica es: 350 (rojo) + 606 (amarillo) + 150 '
+    '(verde) = 1,106 m². Pero la bodega realmente solo tiene 500 m². Esa '
+    'diferencia es deliberada: la gráfica está alertando que la proyección no '
+    'cabe dentro del espacio disponible, y que esa bodega necesitará 606 m² '
+    'adicionales de los que cuenta hoy. Es una señal visual de saturación.'
+)
+add_par(
+    'Cuando el amarillo cabe dentro del verde (superficie_bodega > Ocupado + '
+    'Proyección), la bodega tiene holgura y puede absorber el crecimiento '
+    'proyectado sin necesidad de habilitar nuevo espacio.',
     italic=True, color=GRIS, size=10
 )
 
