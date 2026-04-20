@@ -1306,28 +1306,27 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
 
   // ── ÁREA APILADA · Ocupación y proyección por bodega ──
   const bodArea = D.bodegas.filter(b => b.superficie);
-  const totalCajasActual = bodArea.reduce((s,b)=>s+b.cajas,0);
-  const cajasAdic = Math.max(0, pT.y30 - pT.existencia);
+  const totalCajasActual = bodArea.reduce((s,b)=>s+b.cajas,0) || 1;
+  const cajasAdic = Math.max(0, (pT.y30 || 0) - (pT.existencia || 0));
   const areaDatasets = bodArea.map(b => {
-    const ocupado   = +(b.cajas * AREA_CAJA).toFixed(2);
-    const shareProj = totalCajasActual ? (b.cajas / totalCajasActual) : 0;
-    const proyAdic  = +(cajasAdic * shareProj * AREA_CAJA).toFixed(2);
-    const proyReal  = Math.min(proyAdic, Math.max(0, b.superficie - ocupado));
-    const disponible= +Math.max(0, b.superficie - ocupado - proyReal).toFixed(2);
-    return { nombre:b.nombre, ocupado, proy:proyReal, disponible };
+    const ocupado    = +(b.cajas * AREA_CAJA).toFixed(2);
+    const proyeccion = +(cajasAdic * (b.cajas / totalCajasActual) * AREA_CAJA).toFixed(2);
+    const disponible = +Math.max(0, b.superficie - ocupado).toFixed(2);
+    return { nombre:b.nombre, ocupado, proy:proyeccion, disponible, superficie:b.superficie, cajas:b.cajas };
   });
   new Chart(document.getElementById('c-area-bodegas'), {
     type:'line',
     data:{
       labels: areaDatasets.map(d => d.nombre),
       datasets:[
-        { label:'Ocupado',    data:areaDatasets.map(d=>d.ocupado),    backgroundColor:'rgba(184,65,14,.55)',   borderColor:'#b8410e', borderWidth:2, fill:true, tension:.3, pointRadius:3 },
-        { label:'Proyección', data:areaDatasets.map(d=>d.proy),       backgroundColor:'rgba(215,178,48,.55)',  borderColor:'#d7b230', borderWidth:2, fill:true, tension:.3, pointRadius:3 },
-        { label:'Disponible', data:areaDatasets.map(d=>d.disponible), backgroundColor:'rgba(111,156,88,.55)',  borderColor:'#6f9c58', borderWidth:2, fill:true, tension:.3, pointRadius:3 }
+        { label:'Ocupado',    data:areaDatasets.map(d=>d.ocupado),    backgroundColor:'rgba(184,65,14,.55)',   borderColor:'#b8410e', borderWidth:2, fill:'origin', tension:.3, pointRadius:4, pointBackgroundColor:'#b8410e' },
+        { label:'Proyección', data:areaDatasets.map(d=>d.proy),       backgroundColor:'rgba(215,178,48,.55)',  borderColor:'#d7b230', borderWidth:2, fill:'-1',     tension:.3, pointRadius:4, pointBackgroundColor:'#d7b230' },
+        { label:'Disponible', data:areaDatasets.map(d=>d.disponible), backgroundColor:'rgba(111,156,88,.55)',  borderColor:'#6f9c58', borderWidth:2, fill:'-1',     tension:.3, pointRadius:4, pointBackgroundColor:'#6f9c58' }
       ]
     },
     options:{
       responsive:true, maintainAspectRatio:false,
+      layout:{ padding:{ top:28 } },
       interaction:{ mode:'index', intersect:false },
       plugins:{
         legend:{ position:'bottom' },
@@ -1335,12 +1334,18 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
           callbacks:{
             label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)} m²`,
             afterBody: ctx => {
-              const b = bodArea[ctx[0].dataIndex];
+              const b = areaDatasets[ctx[0].dataIndex];
               return [`Superficie total: ${b.superficie.toFixed(1)} m²`, `${fmt(b.cajas)} cajas actuales`];
             }
           }
         },
-        datalabels:{ display:false }
+        datalabels:{
+          display: ctx => (ctx.dataset.data[ctx.dataIndex] || 0) > 0.5,
+          anchor:'center', align:'center',
+          color:'#1a1612',
+          font:{ family:"'DM Sans',sans-serif", size:10, weight:'700' },
+          formatter: v => v.toFixed(1) + ' m²'
+        }
       },
       scales:{
         x:{ grid:{ display:false }, ticks:{ font:{ size:11, weight:'600' }, maxRotation:30, minRotation:30 } },
