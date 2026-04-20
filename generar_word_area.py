@@ -75,6 +75,16 @@ add_par(
     'vistazo la composición interna de cada bodega y, al recorrer el gráfico de '
     'izquierda a derecha, comparar cómo se comporta el acervo entre espacios.'
 )
+add_par('La idea en una frase', bold=True, size=11, color=GRIS, space_after=4)
+add_par(
+    'Piensa en cada bodega como un vaso vertical. El piso rojo es lo que ya está '
+    'lleno hoy; el amarillo encima es lo que se estima se va a llenar en los '
+    'próximos años hasta 2030; el verde que queda arriba es lo que todavía está '
+    'libre. Si el amarillo se sale por encima de lo que realmente cabe en el vaso, '
+    'esa bodega se va a saturar y hay que tomar medidas (redistribuir cajas o '
+    'habilitar nuevo espacio).',
+    italic=True
+)
 
 # ── 2. Ejes ──
 add_heading('2. ¿Qué representa cada eje?')
@@ -102,25 +112,137 @@ add_colored_bullet('Verde – Disponible', VERDE,
 
 # ── 4. Cómo se calcula ──
 add_heading('4. ¿Cómo se calculan los datos?')
-add_par('Para cada bodega se realizan los siguientes cálculos:', bold=True)
 
-p = doc.add_paragraph(style='List Number')
-p.add_run('Ocupado (m²) = cajas actuales × 0.175').font.size = Pt(11)
-
-p = doc.add_paragraph(style='List Number')
-p.add_run('Disponible (m²) = máx(0, superficie del espacio − Ocupado)').font.size = Pt(11)
-
-p = doc.add_paragraph(style='List Number')
-run = p.add_run(
-    'Proyección (m²) = (cajas proyectadas al 2030 − cajas existencia) × '
-    '(cajas de esta bodega / total de cajas actuales) × 0.175'
+add_par('4.1 Constante física: huella de una caja', bold=True, size=12, color=GUINDA, space_after=4)
+add_par(
+    'Todas las operaciones en m² parten de la huella (área del piso que ocupa una '
+    'caja de archivo vista desde arriba). Las dimensiones estándar de la caja son '
+    '0.35 m × 0.50 m, por lo tanto:'
 )
-run.font.size = Pt(11)
+p = doc.add_paragraph()
+p.paragraph_format.space_after = Pt(8)
+r = p.add_run('    Huella de una caja = 0.35 m × 0.50 m = 0.175 m²')
+r.font.size = Pt(11); r.font.bold = True; r.font.color.rgb = TERRACOTA
+
+add_par('4.2 Franja roja · Ocupado', bold=True, size=12, color=GUINDA, space_after=4)
+add_par(
+    'Para cada bodega, la superficie que ya se está usando depende únicamente del '
+    'número de cajas registradas en ese espacio:'
+)
+p = doc.add_paragraph()
+p.paragraph_format.space_after = Pt(4)
+r = p.add_run('    Ocupado (m²) = cajas_bodega × 0.175')
+r.font.size = Pt(11); r.font.bold = True
+add_par(
+    'Ejemplo: una bodega con 2,000 cajas ocupa 2,000 × 0.175 = 350 m².',
+    italic=True, color=GRIS, size=10
+)
+
+add_par('4.3 Franja verde · Disponible', bold=True, size=12, color=GUINDA, space_after=4)
+add_par(
+    'Es el espacio libre al día de hoy. Se calcula como la diferencia entre la '
+    'superficie total del espacio (dato reportado por el administrador de la bodega '
+    'en la hoja "Bodegas") y lo que ya ocupan las cajas:'
+)
+p = doc.add_paragraph()
+p.paragraph_format.space_after = Pt(4)
+r = p.add_run('    Disponible (m²) = máx(0, superficie_bodega − Ocupado)')
+r.font.size = Pt(11); r.font.bold = True
+add_par(
+    'La función "máx(0, ...)" evita mostrar números negativos si la información '
+    'reportada de cajas excede la superficie registrada (caso raro pero posible '
+    'con almacenamiento en altura).',
+    italic=True, color=GRIS, size=10
+)
+
+add_par('4.4 Franja amarilla · Proyección', bold=True, size=12, color=GUINDA, space_after=4)
+
+add_par('En palabras simples', bold=True, size=11, color=GRIS, space_after=4)
+add_par(
+    'La hoja "Proyección" del Google Sheet registra cuántas cajas hay hoy en el '
+    'acervo (existencia) y cuántas se estima que habrá al cierre del sexenio, en '
+    '2030. La diferencia entre ambos números es el crecimiento: las cajas que van a '
+    'llegar en los próximos años. Lo que no dice el sistema es en qué bodega '
+    'específica va a caer cada caja nueva. Por eso se hace un supuesto razonable: '
+    'cada bodega va a seguir recibiendo cajas en la misma proporción que tiene hoy. '
+    'Si hoy una bodega concentra el 27 % de las cajas, se asume que va a recibir '
+    'el 27 % de las cajas nuevas. Después, esas cajas proyectadas se traducen a '
+    'metros cuadrados multiplicándolas por la huella (0.175 m²). Ese resultado es '
+    'lo que pinta la franja amarilla.'
+)
+
+add_par('Fórmulas detalladas (tres pasos)', bold=True, size=11, color=GRIS, space_after=4)
+
+p = doc.add_paragraph(style='List Number')
+p.paragraph_format.space_after = Pt(4)
+r = p.add_run('Se calculan las cajas adicionales que entrarán al acervo. El dato '
+              'sale de la pestaña "Proyección" del Google Sheet, que reporta las '
+              'cajas totales por año.')
+r.font.size = Pt(11)
+p = doc.add_paragraph()
+p.paragraph_format.left_indent = Cm(1)
+p.paragraph_format.space_after = Pt(6)
+r = p.add_run('Δcajas_2030 = cajas_proyectadas_2030 − cajas_existencia_actual')
+r.font.size = Pt(11); r.font.bold = True
+
+p = doc.add_paragraph(style='List Number')
+p.paragraph_format.space_after = Pt(4)
+r = p.add_run('Se determina qué porcentaje del acervo actual mantiene cada bodega. '
+              'Esta es la "participación" que se asume se mantendrá al proyectar.')
+r.font.size = Pt(11)
+p = doc.add_paragraph()
+p.paragraph_format.left_indent = Cm(1)
+p.paragraph_format.space_after = Pt(6)
+r = p.add_run('participación_bodega = cajas_bodega ÷ total_cajas_actuales')
+r.font.size = Pt(11); r.font.bold = True
+
+p = doc.add_paragraph(style='List Number')
+p.paragraph_format.space_after = Pt(4)
+r = p.add_run('Se reparte el crecimiento global en proporción a esa participación '
+              'y se convierte a metros cuadrados usando la huella.')
+r.font.size = Pt(11)
+p = doc.add_paragraph()
+p.paragraph_format.left_indent = Cm(1)
+p.paragraph_format.space_after = Pt(8)
+r = p.add_run('Proyección_bodega (m²) = Δcajas_2030 × participación_bodega × 0.175')
+r.font.size = Pt(11); r.font.bold = True; r.font.color.rgb = TERRACOTA
+
+add_par('Ejemplo numérico completo', bold=True, size=11, color=GRIS, space_after=4)
+add_par(
+    'Supón que la existencia actual total es de 7,319 cajas y que la proyección '
+    'al 2030 es de 20,000. Entonces Δcajas_2030 = 20,000 − 7,319 = 12,681 cajas '
+    'adicionales. Si una bodega concentra 2,000 de esas 7,319 cajas (participación '
+    '= 2,000 ÷ 7,319 ≈ 27.33 %), su proyección será:',
+    italic=True, color=GRIS, size=10
+)
+p = doc.add_paragraph()
+p.paragraph_format.left_indent = Cm(1)
+p.paragraph_format.space_after = Pt(6)
+r = p.add_run('Proyección = 12,681 × 0.2733 × 0.175 ≈ 606 m²')
+r.font.size = Pt(11); r.font.bold = True
+
+add_par('4.5 Supuestos que se asumen al proyectar', bold=True, size=12, color=GUINDA, space_after=4)
+bullets_sup = [
+    'El reparto del crecimiento respeta la distribución actual de cajas: las bodegas '
+    'que hoy concentran más documentación seguirán recibiendo proporcionalmente más.',
+    'La huella efectiva de cada caja se mantiene constante (no se considera '
+    'almacenamiento en altura ni optimización del uso de estantería).',
+    'No se descuenta ningún depuramiento o baja documental en el horizonte 2025–2030; '
+    'es un escenario de crecimiento pasivo.',
+]
+for b in bullets_sup:
+    p = doc.add_paragraph(style='List Bullet')
+    p.paragraph_format.space_after = Pt(3)
+    r = p.add_run(b)
+    r.font.size = Pt(10)
+    r.font.color.rgb = GRIS
+    r.font.italic = True
 
 add_par(
-    'La huella de 0.175 m² sale de las dimensiones físicas reales de una caja de '
-    'archivo: 35 cm de ancho por 50 cm de largo. Los datos de existencia y de '
-    'proyección 2030 provienen de la pestaña "Proyección" del mismo Google Sheet.',
+    'Fuentes de los datos: la pestaña "Bodegas" del Google Sheet aporta el número de '
+    'cajas y la superficie por espacio; la pestaña "Proyección" aporta la existencia '
+    'y las cajas totales anuales 2025-2030. La huella (0.175 m²) es una constante '
+    'declarada en el código del dashboard (archivo index.html).',
     italic=True, color=GRIS, size=10
 )
 
