@@ -1352,20 +1352,20 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
       plugins:{
         legend:{ position:'bottom' },
         tooltip:{
-          usePointStyle:true,
-          boxWidth:10, boxHeight:10, boxPadding:6,
+          displayColors:true,
+          boxWidth:12, boxHeight:12, boxPadding:6,
           itemSort: (a, b) => {
             const rank = l => l === 'Ocupado' ? 0 : l === 'Disponible' ? 1 : 2;
             return rank(a.dataset.label) - rank(b.dataset.label);
           },
           callbacks:{
-            labelPointStyle: () => ({ pointStyle:'circle', rotation:0 }),
             labelColor: ctx => ({
               borderColor: ctx.dataset.borderColor,
               backgroundColor: ctx.dataset.borderColor,
-              borderWidth: 0
+              borderWidth: 2,
+              borderRadius: 6
             }),
-            label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)} m²`,
+            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)} m²`,
             afterBody: ctx => {
               const b = areaDatasets[ctx[0].dataIndex];
               const totalStack = b.ocupado + b.proy + b.disponible;
