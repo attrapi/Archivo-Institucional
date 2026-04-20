@@ -1352,6 +1352,10 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
       plugins:{
         legend:{ position:'bottom' },
         tooltip:{
+          itemSort: (a, b) => {
+            const rank = l => l === 'Ocupado' ? 0 : l === 'Disponible' ? 1 : 2;
+            return rank(a.dataset.label) - rank(b.dataset.label);
+          },
           callbacks:{
             label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)} m²`,
             afterBody: ctx => {
@@ -1361,7 +1365,7 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
               const alerta = diff > 0.5 ? ` (supera por ${diff.toFixed(1)} m²)` : '';
               return [
                 '────────────',
-                `Superficie total (Ocup + Proy + Disp): ${totalStack.toFixed(1)} m²${alerta}`,
+                `Superficie total (Ocup + Disp + Proy): ${totalStack.toFixed(1)} m²${alerta}`,
                 `Superficie real del espacio: ${b.superficie.toFixed(1)} m²`,
                 `${fmt(b.cajas)} cajas actuales`
               ];
