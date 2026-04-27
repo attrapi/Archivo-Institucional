@@ -253,7 +253,6 @@ body.report-mode #tab-resumen{display:block !important}
     <button data-tab="transferencias">Direcciones Extintas</button>
     <button data-tab="tp">UC</button>
     <button data-tab="proyeccion">Proyección</button>
-    <button data-tab="area">Área apilada</button>
   </div>
 </div>
 
@@ -590,24 +589,6 @@ body.report-mode #tab-resumen{display:block !important}
           <tbody id="tbody-proy"></tbody>
         </table>
       </div>
-    </div>
-  </section>
-</div>
-
-<!-- ═══ TAB: ÁREA APILADA ═══ -->
-<div class="tab-panel" id="tab-area">
-  <section class="panel">
-    <div class="sec-head">
-      <div>
-        <div class="sec-title">Ocupación y proyección por bodega</div>
-        <div class="sec-sub">Superficie ocupada, disponible y proyectada (m²) por espacio</div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">Barras apiladas · Bodegas y contenedor</div>
-      <div class="card-sub">Rojo = ocupado · Amarillo = proyección de ocupación (2030) · Verde = disponible</div>
-      <div class="chart-wrap tall"><canvas id="c-area-bodegas"></canvas></div>
-      <div id="area-breakdown" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid var(--border-s)"></div>
     </div>
   </section>
 </div>
@@ -1324,129 +1305,6 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
       proyChart.update();
     });
   });
-
-  // ── ÁREA APILADA · Ocupación y proyección por bodega ──
-  const bodArea = D.bodegas.filter(b => b.superficie);
-  const totalCajasActual = bodArea.reduce((s,b)=>s+b.cajas,0) || 1;
-  const cajasAdic = Math.max(0, (pT.y30 || 0) - (pT.existencia || 0));
-  const areaDatasets = bodArea.map(b => {
-    const ocupado    = +(b.cajas * AREA_CAJA).toFixed(2);
-    const proyeccion = +(cajasAdic * (b.cajas / totalCajasActual) * AREA_CAJA).toFixed(2);
-    const disponible = +Math.max(0, b.superficie - ocupado).toFixed(2);
-    return { nombre:b.nombre, ocupado, proy:proyeccion, disponible, superficie:b.superficie, cajas:b.cajas };
-  });
-  new Chart(document.getElementById('c-area-bodegas'), {
-    type:'bar',
-    data:{
-      labels: areaDatasets.map(d => d.nombre),
-      datasets:[
-        { label:'Ocupado',           data:areaDatasets.map(d=>d.ocupado),    backgroundColor:'#b8410e', borderColor:'#b8410e', borderWidth:0 },
-        { label:'Proyección (2030)', data:areaDatasets.map(d=>d.proy),       backgroundColor:'#d7b230', borderColor:'#d7b230', borderWidth:0 },
-        { label:'Disponible',        data:areaDatasets.map(d=>d.disponible), backgroundColor:'#6f9c58', borderColor:'#6f9c58', borderWidth:0 }
-      ]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      layout:{ padding:{ top:32 } },
-      interaction:{ mode:'index', intersect:false },
-      plugins:{
-        legend:{ position:'bottom' },
-        tooltip:{
-          displayColors:true,
-          boxWidth:12, boxHeight:12, boxPadding:6,
-          itemSort: (a, b) => {
-            const rank = l => l === 'Ocupado' ? 0 : l === 'Disponible' ? 1 : 2;
-            return rank(a.dataset.label) - rank(b.dataset.label);
-          },
-          callbacks:{
-            title: ctx => {
-              const b = areaDatasets[ctx[0].dataIndex];
-              const totalStack = b.ocupado + b.proy + b.disponible;
-              const diff = totalStack - b.superficie;
-              const alerta = diff > 0.5 ? ` (supera por ${diff.toFixed(1)} m²)` : '';
-              return [b.nombre, `Superficie total apilada: ${totalStack.toFixed(1)} m²${alerta}`];
-            },
-            labelColor: ctx => ({
-              borderColor: ctx.dataset.borderColor,
-              backgroundColor: ctx.dataset.borderColor,
-              borderWidth: 2,
-              borderRadius: 6
-            }),
-            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)} m²`,
-            afterBody: ctx => {
-              const b = areaDatasets[ctx[0].dataIndex];
-              return [
-                '',
-                `Superficie real del espacio: ${b.superficie.toFixed(1)} m²`,
-                `${fmt(b.cajas)} cajas actuales`
-              ];
-            }
-          }
-        },
-        datalabels:{
-          labels:{
-            segmento:{
-              display: ctx => {
-                const v = ctx.dataset.data[ctx.dataIndex] || 0;
-                if (v <= 0) return false;
-                const y = ctx.chart.scales.y;
-                if (!y) return false;
-                const h = Math.abs(y.getPixelForValue(0) - y.getPixelForValue(v));
-                return h >= 18;
-              },
-              anchor:'center', align:'center',
-              color:'#fff',
-              font:{ family:"'DM Sans',sans-serif", size:10, weight:'700' },
-              formatter: v => v.toFixed(1)
-            },
-            total:{
-              display: ctx => ctx.datasetIndex === ctx.chart.data.datasets.length - 1,
-              anchor:'end', align:'top', offset:6,
-              color:'#1a1612',
-              backgroundColor:'rgba(255,255,255,.85)',
-              borderRadius:3,
-              padding:{ top:2, bottom:2, left:5, right:5 },
-              font:{ family:"'DM Sans',sans-serif", size:10, weight:'700' },
-              formatter: (_v, ctx) => {
-                const t = ctx.chart.data.datasets.reduce((s,d)=>s+(d.data[ctx.dataIndex]||0), 0);
-                return t.toFixed(1) + ' m²';
-              }
-            }
-          }
-        }
-      },
-      scales:{
-        x:{ stacked:true, grid:{ display:false }, ticks:{ font:{ size:11, weight:'600' }, maxRotation:0, minRotation:0, autoSkip:false } },
-        y:{ stacked:true, grid:{ color:'#f0ead9' }, title:{ display:true, text:'m²', font:{ size:11 } }, ticks:{ callback:v=>v+' m²' } }
-      }
-    }
-  });
-
-  // Tarjetas-leyenda con el detalle por bodega (diseño ejecutivo)
-  const areaBreak = document.getElementById('area-breakdown');
-  if (areaBreak) {
-    areaDatasets.forEach(d => {
-      const total = d.ocupado + d.proy + d.disponible;
-      const pctOcup = total ? (d.ocupado    / total * 100) : 0;
-      const pctProy = total ? (d.proy       / total * 100) : 0;
-      const pctDisp = total ? (d.disponible / total * 100) : 0;
-      const card = document.createElement('div');
-      card.style.cssText = 'background:var(--bg);border:1px solid var(--border-s);border-radius:4px;padding:10px 12px;font-family:\'DM Sans\',sans-serif';
-      card.innerHTML = `
-        <div style="font-size:11px;font-weight:700;color:var(--ink);text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${d.nombre}">${d.nombre}</div>
-        <div style="display:flex;height:6px;border-radius:3px;overflow:hidden;background:#ececec;margin-bottom:8px">
-          <div style="width:${pctOcup}%;background:#b8410e"></div>
-          <div style="width:${pctProy}%;background:#d7b230"></div>
-          <div style="width:${pctDisp}%;background:#6f9c58"></div>
-        </div>
-        <div style="display:grid;grid-template-columns:auto 1fr;gap:2px 8px;font-size:11px;color:var(--ink)">
-          <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:#b8410e;border-radius:50%"></span>Ocupado</span><span style="text-align:right;font-weight:700">${d.ocupado.toFixed(1)} m²</span>
-          <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:#d7b230;border-radius:50%"></span>Proyección (2030)</span><span style="text-align:right;font-weight:700">${d.proy.toFixed(1)} m²</span>
-          <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:#6f9c58;border-radius:50%"></span>Disponible</span><span style="text-align:right;font-weight:700">${d.disponible.toFixed(1)} m²</span>
-        </div>`;
-      areaBreak.appendChild(card);
-    });
-  }
 
   // Tabla proyección
   const tbP=document.getElementById('tbody-proy');
