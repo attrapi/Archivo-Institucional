@@ -556,10 +556,6 @@ body.report-mode #tab-resumen{display:block !important}
         <div class="sec-title">Proyección Sexenal 2025–2030</div>
         <div class="sec-sub">Crecimiento estimado del acervo por obra ferroviaria</div>
       </div>
-      <div class="toggle-group">
-        <button class="active" data-view="acum">Acumulado</button>
-        <button data-view="entrada">Entradas anuales</button>
-      </div>
     </div>
     <div class="card" style="margin-bottom:20px">
       <div class="card-title">Crecimiento total proyectado</div>
@@ -567,8 +563,16 @@ body.report-mode #tab-resumen{display:block !important}
       <div class="chart-wrap tall"><canvas id="c-proy-total"></canvas></div>
     </div>
     <div class="card" style="margin-bottom:20px">
-      <div class="card-title">Proyección por obra</div>
-      <div class="card-sub">Distribución del crecimiento</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
+        <div>
+          <div class="card-title">Proyección por obra</div>
+          <div class="card-sub">Distribución del crecimiento</div>
+        </div>
+        <div class="toggle-group">
+          <button class="active" data-view="acum">Acumulado</button>
+          <button data-view="entrada">Entradas anuales</button>
+        </div>
+      </div>
       <div class="chart-wrap tall"><canvas id="c-proy-obras"></canvas></div>
     </div>
     <div class="card">
