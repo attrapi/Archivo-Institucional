@@ -1585,7 +1585,7 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
         const header = document.createElement('div');
         header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:24px;padding:0 8px 14px;margin-bottom:10px;border-bottom:2px solid #3d332a;font-family:\'Fraunces\',serif';
         header.innerHTML = '<div style="flex:1;text-align:left;font-size:18px;font-weight:600;color:#000;letter-spacing:-.005em;line-height:1.2">Dirección de Procesos Administrativos de Construcción</div>'
-                         + '<div style="flex:1;text-align:right;font-size:18px;font-weight:600;color:#000;letter-spacing:-.005em;line-height:1.2">Estado del archivo <em style="font-style:italic;color:#b8410e;font-weight:600">de concentración</em></div>';
+                         + '<div style="flex:1;display:flex;align-items:center;justify-content:flex-end;gap:14px;font-size:18px;font-weight:600;color:#000;letter-spacing:-.005em;line-height:1.2"><span>Estado del archivo <em style="font-style:italic;color:#b8410e;font-weight:600">de concentración</em></span><img src="ATTRAPI.png" alt="ATTRAPI" crossorigin="anonymous" style="height:48px;width:auto;object-fit:contain"></div>';
         const panelClone = panel.cloneNode(true);
         panelClone.querySelectorAll('#btn-report').forEach(b => b.remove());
         // Normaliza la kpis-wrap dentro del panel (quita sticky/overlays)
@@ -1605,6 +1605,10 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
         wrap.appendChild(header);
         wrap.appendChild(panelClone);
         document.body.appendChild(wrap);
+        await Promise.all(Array.from(wrap.querySelectorAll('img')).map(img =>
+          img.complete && img.naturalWidth ? Promise.resolve() :
+          new Promise(res => { img.onload = img.onerror = () => res(); })
+        ));
         const canvas = await html2canvas(wrap, {scale:2, backgroundColor:'#faf7f0', useCORS:true, logging:false});
         document.body.removeChild(wrap);
         const { jsPDF } = window.jspdf;
