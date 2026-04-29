@@ -299,7 +299,7 @@ body.report-mode #tab-resumen{display:block !important}
         <div class="kpi-meta" id="kpi-bodegas-meta">—</div>
       </div>
       <div class="kpi">
-        <div class="kpi-label">m² libres</div>
+        <div class="kpi-label">Espacio disponible</div>
         <div class="kpi-value" id="kpi-disponible">—</div>
         <div class="kpi-meta" id="kpi-disponible-meta">—</div>
       </div>
@@ -915,8 +915,8 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
   const supLibre = Math.max(0, supTotal - supUsada);
   const supPctLibre = supTotal ? (supLibre/supTotal*100) : 0;
   const cajasCabenAdic = Math.floor(supLibre / AREA_CAJA);
-  document.getElementById('kpi-disponible').innerHTML   = `${fmt(Math.round(supLibre))}<sup>m²</sup>`;
-  document.getElementById('kpi-disponible-meta').innerHTML = `${supPctLibre.toFixed(1)}% libre · ~${fmt(cajasCabenAdic)} cajas`;
+  document.getElementById('kpi-disponible').innerHTML   = `${supPctLibre.toFixed(1)}<sup>%</sup>`;
+  document.getElementById('kpi-disponible-meta').innerHTML = `${fmt(Math.round(supLibre))} m² libres · ~${fmt(cajasCabenAdic)} cajas`;
 
   // ── RESUMEN · Cajas y ocupación por bodega ──────────
   const bodSup = D.bodegas.filter(b => b.superficie).sort((a,b)=>b.superficie-a.superficie);
