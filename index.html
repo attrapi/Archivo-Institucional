@@ -165,7 +165,9 @@ tr.total-row:hover td{background:var(--ink-soft)}
 .empty-state{text-align:center;padding:3rem;color:var(--ink-muted);font-size:13px}
 
 /* FOOTER */
-footer{max-width:1400px;margin:60px auto 0;padding:36px 40px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--ink-muted)}
+footer{max-width:1400px;margin:60px auto 0;padding:36px 40px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:20px;font-size:11px;color:var(--ink-muted)}
+.foot-img{width:100%;height:auto;display:block}
+.foot-row{display:flex;justify-content:space-between;align-items:center;gap:20px;width:100%}
 .foot-brand{font-family:'Fraunces',serif;font-size:14px;color:var(--ink-soft)}
 
 /* TANK CARDS */
@@ -673,8 +675,11 @@ body.report-mode #tab-resumen{display:block !important}
 </div><!-- /contenido tabs -->
 
 <footer>
-  <div class="foot-brand">ATTRAPI · Archivo de Concentración</div>
-  <div><span id="footer-date">—</span></div>
+  <img src="piedepágina2026.png" alt="" class="foot-img">
+  <div class="foot-row">
+    <div class="foot-brand">ATTRAPI · Archivo de Concentración</div>
+    <div><span id="footer-date">—</span></div>
+  </div>
 </footer>
 
 <script>
