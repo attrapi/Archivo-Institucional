@@ -167,7 +167,7 @@ tr.total-row:hover td{background:var(--ink-soft)}
 /* FOOTER */
 footer{max-width:1400px;margin:60px auto 0;padding:36px 40px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:20px;font-size:11px;color:var(--ink-muted);content-visibility:auto;contain-intrinsic-size:1px 320px}
 .foot-img{width:100%;height:auto;display:block;content-visibility:auto;contain-intrinsic-size:1400px 220px}
-.foot-row{display:flex;justify-content:space-between;align-items:center;gap:20px;width:100%}
+.foot-row{display:flex;justify-content:center;align-items:center;gap:20px;width:100%;text-align:center}
 .foot-brand{font-family:'Fraunces',serif;font-size:14px;color:var(--ink-soft)}
 
 /* TANK CARDS */
@@ -678,7 +678,6 @@ body.report-mode #tab-resumen{display:block !important}
   <img src="piedepágina2026.png" alt="" class="foot-img" loading="lazy" decoding="async">
   <div class="foot-row">
     <div class="foot-brand">ATTRAPI · Archivo de Concentración</div>
-    <div><span id="footer-date">—</span></div>
   </div>
 </footer>
 
@@ -908,7 +907,6 @@ function initDashboard(D) {
   const propio   = D.bodegas.filter(b=>b.tipo==='Propio').length;
   const prestado = D.bodegas.filter(b=>b.tipo==='Prestado').length;
   document.getElementById('kpi-bodegas-meta').innerHTML= `<span>${propio} propio</span> · ${prestado} prestados`;
-document.getElementById('footer-date').textContent   = new Date().toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'});
 
   // Dimensiones físicas de una caja (usadas en varios gráficos)
   const VOL_CAJA  = 0.35 * 0.50 * 0.25; // 0.04375 m³
