@@ -1612,6 +1612,12 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
         });
         wrap.appendChild(header);
         wrap.appendChild(panelClone);
+        const pdfFooter = document.createElement('img');
+        pdfFooter.src = 'piedepágina2026.png';
+        pdfFooter.alt = '';
+        pdfFooter.crossOrigin = 'anonymous';
+        pdfFooter.style.cssText = 'width:100%;height:auto;display:block;margin-top:18px';
+        wrap.appendChild(pdfFooter);
         document.body.appendChild(wrap);
         await Promise.all(Array.from(wrap.querySelectorAll('img')).map(img =>
           img.complete && img.naturalWidth ? Promise.resolve() :
