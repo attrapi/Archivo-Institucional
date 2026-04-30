@@ -44,8 +44,8 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
 .topbar-inner{max-width:1400px;margin:0 auto;padding:16px 40px;display:flex;align-items:center;justify-content:space-between;gap:20px}
 .brand{display:flex;align-items:center;gap:12px}
 .brand-mark{width:36px;height:36px;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:600;font-size:19px;border-radius:2px}
-.brand-text{font-family:'Fraunces',serif;font-size:16px;font-weight:500;letter-spacing:-.01em}
-.brand-text small{display:block;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:400;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.08em;margin-top:1px}
+.brand-text{font-family:'Fraunces',serif;font-size:20px;font-weight:600;letter-spacing:-.01em}
+.brand-text small{display:block;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--ink);text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
 .nav-tabs{display:flex;gap:2px}
 .nav-tabs button{background:none;border:none;font-family:inherit;font-size:13px;font-weight:500;color:var(--ink-soft);padding:7px 13px;border-radius:6px;cursor:pointer;transition:all .2s;white-space:nowrap}
 .nav-tabs button:hover{background:var(--bg-w);color:var(--ink)}
@@ -1593,7 +1593,7 @@ document.getElementById('footer-date').textContent   = new Date().toLocaleString
                          +   '<div>Dirección de Procesos Administrativos de Construcción</div>'
                          +   '<div>Estado del archivo <em style="font-style:italic;color:#b8410e;font-weight:600">de concentración</em></div>'
                          + '</div>'
-                         + '<img src="ATTRAPI.png" alt="ATTRAPI" crossorigin="anonymous" style="height:180px;width:auto;object-fit:contain;flex-shrink:0">';
+                         + '<img src="ATTRAPI.png" alt="ATTRAPI" crossorigin="anonymous" style="height:120px;width:auto;object-fit:contain;flex-shrink:0">';
         const panelClone = panel.cloneNode(true);
         panelClone.querySelectorAll('#btn-report').forEach(b => b.remove());
         // Normaliza la kpis-wrap dentro del panel (quita sticky/overlays)
