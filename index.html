@@ -521,21 +521,21 @@ body.report-mode #tab-resumen{display:block !important}
       <div class="sec-head" style="margin-bottom:14px">
         <div>
           <div class="card-title">Registro de transferencias primarias</div>
-          <div class="card-sub" id="tp-sub">—</div>
+          <div class="card-sub" id="tpua-sub">—</div>
         </div>
-        <input class="search-box" id="search-tp" type="text" placeholder="Buscar unidad, contratista…">
+        <input class="search-box" id="search-tpua" type="text" placeholder="Buscar unidad administrativa…">
       </div>
       <div class="tbl-wrap">
         <table>
           <thead><tr>
-            <th>Unidad / Contratista</th>
+            <th>Unidad administrativa</th>
             <th>N° Transferencia</th>
             <th>Descripción</th>
             <th class="num">Cajas</th>
           </tr></thead>
-          <tbody id="tbody-tp"></tbody>
+          <tbody id="tbody-tpua"></tbody>
         </table>
-        <p class="empty-state" id="tp-empty" style="display:none">Sin resultados.</p>
+        <p class="empty-state" id="tpua-empty" style="display:none">Sin resultados.</p>
       </div>
     </div>
   </section>
@@ -616,6 +616,7 @@ body.report-mode #tab-resumen{display:block !important}
         <div class="sec-title">Unidad de Construcción</div>
         <div class="sec-sub">Transferencias primarias coordinadas por el Archivo de Concentración</div>
       </div>
+      <input class="search-box" id="search-tp" type="text" placeholder="Buscar unidad, contratista…">
     </div>
     <div class="card" style="margin-bottom:20px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
@@ -662,6 +663,22 @@ body.report-mode #tab-resumen{display:block !important}
           <div style="font-family:'Fraunces',serif;font-size:64px;font-weight:400;line-height:1;color:var(--ink)" id="tp-total">—</div>
           <div style="font-size:11px;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.1em">cajas transferidas</div>
         </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Registro de transferencias primarias</div>
+      <div class="card-sub" id="tp-sub">—</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Unidad / Contratista</th>
+            <th>N° Transferencia</th>
+            <th>Descripción</th>
+            <th class="num">Cajas</th>
+          </tr></thead>
+          <tbody id="tbody-tp"></tbody>
+        </table>
+        <p class="empty-state" id="tp-empty" style="display:none">Sin resultados.</p>
       </div>
     </div>
   </section>
@@ -1211,7 +1228,15 @@ function initDashboard(D) {
   // ── TP MARZO 2026 ─────────────────────────────────────
   const tpTotal=D.tp.reduce((s,t)=>s+t.cajas,0);
   document.getElementById('tp-total').textContent=fmt(tpTotal);
-  document.getElementById('tp-sub').textContent=`${D.tp.length} transferencias primarias · ${fmt(tpTotal)} cajas`;
+
+  // Unidades Administrativas → cuadro en pestaña "Transferencias Primarias"
+  // Contratistas → se quedan en el cuadro de "UC"
+  const esUnidadAdmin = t => /unidad(es)? admin/i.test(t.seccion);
+  const tpContrat = D.tp.filter(t=>!esUnidadAdmin(t));
+  const tpUA      = D.tp.filter(t=> esUnidadAdmin(t));
+  const tpContratTotal = tpContrat.reduce((s,t)=>s+t.cajas,0);
+  const tpUATotal      = tpUA.reduce((s,t)=>s+t.cajas,0);
+  document.getElementById('tp-sub').textContent=`${tpContrat.length} transferencias primarias · ${fmt(tpContratTotal)} cajas`;
 
   // Agrupar por sección
   const tpSec={};
@@ -1239,17 +1264,35 @@ function initDashboard(D) {
   function renderTP(q=''){
     tbTP.innerHTML='';
     const emp=document.getElementById('tp-empty');
-    const fil=D.tp.filter(t=>`${t.unidad} ${t.descripcion} ${t.seccion}`.toLowerCase().includes(q.toLowerCase()));
+    const fil=tpContrat.filter(t=>`${t.unidad} ${t.descripcion} ${t.seccion}`.toLowerCase().includes(q.toLowerCase()));
     if(!fil.length){emp.style.display='block';return;}
     emp.style.display='none';
     fil.forEach(t=>{const tr=document.createElement('tr');
       tr.innerHTML=`<td>${trunc(t.unidad,60)}</td><td>${t.num}</td><td>${trunc(t.descripcion,60)}</td><td class="num">${fmt(t.cajas)}</td>`;
       tbTP.appendChild(tr);});
     if(!q){const tr=document.createElement('tr');tr.className='total-row';
-      tr.innerHTML=`<td>TOTAL</td><td></td><td></td><td class="num">${fmt(tpTotal)}</td>`;tbTP.appendChild(tr);}
+      tr.innerHTML=`<td>TOTAL</td><td></td><td></td><td class="num">${fmt(tpContratTotal)}</td>`;tbTP.appendChild(tr);}
   }
   renderTP();
   document.getElementById('search-tp').addEventListener('input',e=>renderTP(e.target.value));
+
+  // ── Registro de transferencias primarias · Unidades Administrativas (pestaña Transferencias Primarias) ──
+  document.getElementById('tpua-sub').textContent=`${tpUA.length} transferencias primarias · ${fmt(tpUATotal)} cajas`;
+  const tbTPUA=document.getElementById('tbody-tpua');
+  function renderTPUA(q=''){
+    tbTPUA.innerHTML='';
+    const emp=document.getElementById('tpua-empty');
+    const fil=tpUA.filter(t=>`${t.unidad} ${t.descripcion} ${t.seccion}`.toLowerCase().includes(q.toLowerCase()));
+    if(!fil.length){emp.style.display='block';return;}
+    emp.style.display='none';
+    fil.forEach(t=>{const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${trunc(t.unidad,60)}</td><td>${t.num}</td><td>${trunc(t.descripcion,60)}</td><td class="num">${fmt(t.cajas)}</td>`;
+      tbTPUA.appendChild(tr);});
+    if(!q){const tr=document.createElement('tr');tr.className='total-row';
+      tr.innerHTML=`<td>TOTAL</td><td></td><td></td><td class="num">${fmt(tpUATotal)}</td>`;tbTPUA.appendChild(tr);}
+  }
+  renderTPUA();
+  document.getElementById('search-tpua').addEventListener('input',e=>renderTPUA(e.target.value));
 
   // ── PROYECCIÓN ───────────────────────────────────────
   const pT=D.proyeccion.totales;
