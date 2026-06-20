@@ -517,6 +517,27 @@ body.report-mode #tab-resumen{display:block !important}
         </table>
       </div>
     </div>
+    <div class="card" style="margin-top:20px">
+      <div class="sec-head" style="margin-bottom:14px">
+        <div>
+          <div class="card-title">Registro de transferencias primarias</div>
+          <div class="card-sub" id="tp-sub">—</div>
+        </div>
+        <input class="search-box" id="search-tp" type="text" placeholder="Buscar unidad, contratista…">
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Unidad / Contratista</th>
+            <th>N° Transferencia</th>
+            <th>Descripción</th>
+            <th class="num">Cajas</th>
+          </tr></thead>
+          <tbody id="tbody-tp"></tbody>
+        </table>
+        <p class="empty-state" id="tp-empty" style="display:none">Sin resultados.</p>
+      </div>
+    </div>
   </section>
 </div>
 
@@ -595,7 +616,6 @@ body.report-mode #tab-resumen{display:block !important}
         <div class="sec-title">Unidad de Construcción</div>
         <div class="sec-sub">Transferencias primarias coordinadas por el Archivo de Concentración</div>
       </div>
-      <input class="search-box" id="search-tp" type="text" placeholder="Buscar unidad, contratista…">
     </div>
     <div class="card" style="margin-bottom:20px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
@@ -642,22 +662,6 @@ body.report-mode #tab-resumen{display:block !important}
           <div style="font-family:'Fraunces',serif;font-size:64px;font-weight:400;line-height:1;color:var(--ink)" id="tp-total">—</div>
           <div style="font-size:11px;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.1em">cajas transferidas</div>
         </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">Registro de transferencias primarias</div>
-      <div class="card-sub" id="tp-sub">—</div>
-      <div class="tbl-wrap">
-        <table>
-          <thead><tr>
-            <th>Unidad / Contratista</th>
-            <th>N° Transferencia</th>
-            <th>Descripción</th>
-            <th class="num">Cajas</th>
-          </tr></thead>
-          <tbody id="tbody-tp"></tbody>
-        </table>
-        <p class="empty-state" id="tp-empty" style="display:none">Sin resultados.</p>
       </div>
     </div>
   </section>
