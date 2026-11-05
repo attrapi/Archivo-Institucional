@@ -203,7 +203,23 @@ tr.total-row:hover td{background:var(--ink-soft)}
 .mx-crumb.current:hover{background:none}
 .mx-sep{color:var(--ink-muted);font-size:11px}
 
-.mx-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+/* Todo en un renglón: el buscador toma un ancho fijo modesto, los cuatro
+   selectores se reparten en partes iguales lo que sobre, y los botones no
+   se encogen. min-width:0 es lo que permite que los select cedan ancho. */
+.mx-toolbar{display:flex;flex-wrap:nowrap;gap:9px;align-items:center;margin-bottom:18px}
+.mx-toolbar .search-box{flex:0 0 200px;width:auto;min-width:0}
+/* Ancho fijo y modesto: sin tope, cada select se estira hasta su opción más
+   larga y deja un hueco enorme junto a "Todas las…". Los botones se empujan
+   al extremo, así el aire sobrante queda entre grupos y no dentro de ellos. */
+.mx-toolbar .mx-select{flex:0 1 178px;min-width:0;max-width:178px}
+.mx-toolbar .mx-actions{flex:none;margin-left:auto}
+/* En pantallas angostas no cabe en un renglón: ahí sí se permite el salto. */
+@media(max-width:1180px){
+  .mx-toolbar{flex-wrap:wrap}
+  .mx-toolbar .search-box{flex:1 1 100%}
+  .mx-toolbar .mx-select{flex:1 1 170px;max-width:none}
+  .mx-toolbar .mx-actions{margin-left:0}
+}
 /* Limpiar y Exportar van juntos: sueltos, al angostarse los selectores uno
    subía de renglón y el otro se quedaba abajo. */
 .mx-actions{display:flex;gap:10px;align-items:center}
@@ -935,7 +951,7 @@ body.report-mode #tab-resumen{display:block !important}
     <!-- Explorador -->
     <div id="mx-explorer" style="display:none">
       <div class="mx-toolbar">
-        <input class="search-box" id="mx-q" type="text" placeholder="Escribe para filtrar: expediente, descripción, código…" style="width:330px">
+        <input class="search-box" id="mx-q" type="text" placeholder="Filtra al escribir…" title="Busca en nombre del expediente, descripción y código de clasificación">
         <select class="mx-select" id="mx-f-ua"></select>
         <select class="mx-select" id="mx-f-area"></select>
         <select class="mx-select" id="mx-f-serie"></select>
@@ -2386,7 +2402,7 @@ function mxFillSelects(){
     if (actual && !seen.has(actual)) opts.push([actual, { label:actual, n:0 }]);
     const sel = document.getElementById(id);
     sel.innerHTML = `<option value="">${all}</option>` +
-      opts.map(([k,v])=>`<option value="${mxEsc(k)}">${mxEsc(trunc(v.label,46))} (${v.n})</option>`).join('');
+      opts.map(([k,v])=>`<option value="${mxEsc(k)}">${mxEsc(trunc(v.label,34))} (${v.n})</option>`).join('');
     sel.value = actual;
   }
 }
