@@ -179,6 +179,11 @@ tr.total-row:hover td{background:var(--ink-soft)}
 
 .mx-crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-bottom:10px;padding:10px 12px;background:var(--bg-w);border:1px solid var(--border);border-radius:6px}
 .mx-nav{display:flex;justify-content:flex-end;margin-bottom:18px;padding-bottom:3px}
+/* Reserva de recorrido: en niveles con pocas tarjetas la página quedaba tan
+   corta que el ajuste de scroll no alcanzaba a subir los KPIs bajo las barras,
+   y cada vista aterrizaba a distinta altura. Con min-height el espacio solo
+   aparece cuando el contenido es corto; si es largo, no agrega nada. */
+#mx-body{min-block-size:46vh}
 /* Volver: relieve con borde inferior sólido que se hunde al presionar */
 .mx-btn.back{background:var(--accent);border-color:#8a300a;color:#fff;font-weight:600;
   box-shadow:0 3px 0 #8a300a,0 5px 12px rgba(184,65,14,.28);
@@ -462,21 +467,10 @@ footer{max-width:1400px;margin:60px auto 0;padding:36px 40px;border-top:1px soli
   ::view-transition-new(tab-content){animation:mxFadeIn .28s cubic-bezier(.22,1,.36,1) both}
 }
 
-/* ── Blindaje del reporte PDF y la impresión ──────────────────────────
-   html2canvas clona el DOM para capturarlo. En ese clon los elementos
-   nacen de nuevo, así que @starting-style los dejaría en su fotograma
-   inicial —opacidad 0— y el reporte saldría en blanco. Aquí se apaga
-   todo el movimiento y se fuerza el estado final.                      */
-body.report-mode *,
-body.report-mode *::before,
-body.report-mode *::after{
-  animation:none !important;
-  transition:none !important;
-}
-body.report-mode .kpi,body.report-mode .card,
-body.report-mode .mx-node,body.report-mode .mx-year,body.report-mode .mx-exp-row{
-  opacity:1 !important;translate:none !important;
-}
+/* ── Blindaje de la impresión ─────────────────────────────────────────
+   El reporte PDF NO se protege aquí: la clase report-mode nunca llega a
+   aplicarse desde el JS. Su blindaje real vive en STYLE_OVERRIDE_CSS,
+   que sí se inyecta dentro de #pdf-report al generar la captura.       */
 @media print{
   *,*::before,*::after{animation:none !important;transition:none !important}
   .kpi,.card,.mx-node,.mx-year,.mx-exp-row{opacity:1 !important;translate:none !important}
@@ -1923,7 +1917,12 @@ function initDashboard(D) {
       btnReport.textContent = 'Generando…';
 
       const STYLE_OVERRIDE_CSS = `
-        #pdf-report, #pdf-report *{color:#000 !important;opacity:1 !important;filter:none !important}
+        /* translate y animation se neutralizan junto con opacity: el clon se
+           inserta en el documento vivo, así que cualquier animación de entrada
+           se dispararía sobre él y html2canvas capturaría las tarjetas a medio
+           camino. Comprobado: sin esto salen corridas 22px. */
+        #pdf-report, #pdf-report *{color:#000 !important;opacity:1 !important;filter:none !important;
+          translate:none !important;animation:none !important;transition:none !important}
         #pdf-report .kpi-label,#pdf-report .kpi-meta,#pdf-report .card-sub,#pdf-report .sec-sub,#pdf-report .tank-name,#pdf-report .tank-meta{color:#2a2420 !important;font-weight:600 !important}
         #pdf-report .kpi-value,#pdf-report .sec-title,#pdf-report .card-title,#pdf-report .tank-pct,#pdf-report h1,#pdf-report h2,#pdf-report h3{color:#000 !important;font-weight:700 !important}
         #pdf-report em{color:#b8410e !important;font-weight:700 !important}
@@ -2331,6 +2330,9 @@ function mxOpen(year){
   document.getElementById('mx-head-right').innerHTML =
     'Matriz ' + year + ' <span class="live"><span class="live-dot"></span>en vivo</span>';
   mxRender();
+  // Al entrar a un año faltaba este ajuste: la vista quedaba desplazada
+  // mientras los niveles siguientes sí se acomodaban.
+  mxScrollToResults();
 }
 
 // Filas vigentes para alimentar un selector: la rama del árbol, la búsqueda y
