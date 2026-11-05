@@ -169,7 +169,15 @@ tr.total-row:hover td{background:var(--ink-soft)}
 .mx-year-go{margin-top:18px;font-size:12px;font-weight:600;color:var(--accent)}
 
 .mx-crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-bottom:10px;padding:10px 12px;background:var(--bg-w);border:1px solid var(--border);border-radius:6px}
-.mx-nav{display:flex;justify-content:flex-start;margin-bottom:18px}
+.mx-nav{display:flex;justify-content:flex-start;margin-bottom:18px;padding-bottom:3px}
+/* Volver: relieve con borde inferior sólido que se hunde al presionar */
+.mx-btn.back{background:var(--accent);border-color:#8a300a;color:#fff;font-weight:600;
+  box-shadow:0 3px 0 #8a300a,0 5px 12px rgba(184,65,14,.28);
+  transition:background .18s,color .18s,border-color .18s,transform .08s,box-shadow .08s}
+.mx-btn.back:hover{background:var(--bg-e);color:var(--accent);border-color:var(--accent);
+  box-shadow:0 3px 0 var(--accent),0 5px 12px rgba(184,65,14,.22)}
+.mx-btn.back:active{transform:translateY(3px);
+  box-shadow:0 0 0 #8a300a,0 1px 4px rgba(184,65,14,.2)}
 .mx-crumb{background:none;border:none;font-family:inherit;font-size:12px;color:var(--accent);cursor:pointer;padding:4px 8px;border-radius:4px;transition:background .2s}
 .mx-crumb:hover{background:var(--accent-soft)}
 .mx-crumb.current{color:var(--ink);font-weight:600;cursor:default}
@@ -774,7 +782,7 @@ body.report-mode #tab-resumen{display:block !important}
 
       <div class="mx-kpis" id="mx-kpis"></div>
       <div class="mx-crumbs" id="mx-crumbs"></div>
-      <div class="mx-nav"><button class="mx-btn" id="mx-back">← Volver</button></div>
+      <div class="mx-nav"><button class="mx-btn back" id="mx-back">← Volver</button></div>
       <div id="mx-body"></div>
     </div>
   </section>
@@ -2097,8 +2105,25 @@ function mxOpen(year){
   document.getElementById('mx-q').value = '';
   document.getElementById('mx-head-right').innerHTML =
     'Matriz ' + year + ' <span class="live"><span class="live-dot"></span>en vivo</span>';
-  mxFillSelects();
   mxRender();
+}
+
+// Filas vigentes para alimentar un selector: la rama del árbol, la búsqueda y
+// los DEMÁS filtros, nunca el propio. Así cada lista ofrece solo lo que existe
+// aquí y el usuario puede seguir cambiando de opción dentro del mismo filtro.
+function mxScope(exceptKey){
+  const q = mxState.q.trim().toLowerCase();
+  return mxState.rows.filter(r=>{
+    for (let i=0;i<mxState.path.length;i++){
+      if (mxKey(r[MX_LEVELS[i].key]) !== mxState.path[i].key) return false;
+    }
+    for (const k in mxState.filters){
+      if (k === exceptKey) continue;
+      if (mxState.filters[k] && mxKey(r[k]) !== mxState.filters[k]) return false;
+    }
+    if (q && !r.hay.includes(q)) return false;
+    return true;
+  });
 }
 
 function mxFillSelects(){
@@ -2110,17 +2135,21 @@ function mxFillSelects(){
   ];
   for (const [id, key, all] of defs){
     const seen = new Map();
-    for (const r of mxState.rows){
+    for (const r of mxScope(key)){
       const k = mxKey(r[key]);
       if (!k) continue;
       if (!seen.has(k)) seen.set(k, { label:r[key], n:0 });
       seen.get(k).n++;
     }
     const opts = [...seen.entries()].sort((a,b)=>b[1].n-a[1].n);
+    const actual = mxState.filters[key] || '';
+    // Si lo elegido ya no existe aquí, se conserva con (0) en vez de
+    // desaparecer en silencio, para que se vea por qué no hay resultados.
+    if (actual && !seen.has(actual)) opts.push([actual, { label:actual, n:0 }]);
     const sel = document.getElementById(id);
     sel.innerHTML = `<option value="">${all}</option>` +
       opts.map(([k,v])=>`<option value="${mxEsc(k)}">${mxEsc(trunc(v.label,46))} (${v.n})</option>`).join('');
-    sel.value = mxState.filters[key] || '';
+    sel.value = actual;
   }
 }
 
@@ -2160,8 +2189,22 @@ function mxRender(){
         : 'Matrices');
   document.getElementById('mx-back').textContent = '← Volver a ' + destino;
 
-  // KPIs del subconjunto actual
-  document.getElementById('mx-kpis').innerHTML =
+  // Los selectores se recalculan en cada vista para ofrecer solo lo que existe
+  // en la rama actual; de lo contrario la mayoría de las opciones daba cero.
+  mxFillSelects();
+
+  // KPIs del subconjunto actual. En las vistas de grupos se antepone cuántos
+  // hay en este nivel; en la lista de expedientes ya no hay grupos que contar.
+  const depth = mxState.path.length;
+  const enNodos = !mxState.detail && depth < MX_LEVELS.length;
+  let kpiGrupos = '';
+  if (enNodos){
+    const lvKey = MX_LEVELS[depth].key;
+    kpiGrupos = `<div class="mx-kpi"><b>${fmt(new Set(rows.map(r=>mxKey(r[lvKey])||'(SIN DATO)')).size)}</b><span>Grupos</span></div>`;
+  }
+  const kpis = document.getElementById('mx-kpis');
+  kpis.style.gridTemplateColumns = `repeat(${enNodos?5:4},1fr)`;
+  kpis.innerHTML = kpiGrupos +
     `<div class="mx-kpi"><b>${fmt(t.exp)}</b><span>Expedientes</span></div>
      <div class="mx-kpi"><b>${fmt(t.cajas)}</b><span>Cajas</span></div>
      <div class="mx-kpi"><b>${fmt(t.folios)}</b><span>Folios</span></div>
@@ -2170,7 +2213,6 @@ function mxRender(){
   const body = document.getElementById('mx-body');
   if (mxState.detail) { mxRenderDetail(body); return; }
 
-  const depth = mxState.path.length;
   if (depth < MX_LEVELS.length) mxRenderNodes(body, rows, depth);
   else mxRenderTable(body, rows);
 }
@@ -2353,7 +2395,6 @@ function mxExport(){
     mxState.detail = null;
     mxState.limit = MX_PAGE;
     document.getElementById('mx-q').value = '';
-    mxFillSelects();
     mxRender();
   });
   document.getElementById('mx-export').addEventListener('click', mxExport);
