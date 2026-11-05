@@ -46,6 +46,9 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
 .brand-mark{width:36px;height:36px;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:600;font-size:19px;border-radius:2px}
 .brand-text{font-family:'Fraunces',serif;font-size:30px;font-weight:500;letter-spacing:.04em;line-height:1;color:var(--ink);padding-left:14px;border-left:2px solid var(--accent)}
 .brand-text small{display:block;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.16em;margin-top:6px}
+/* Segunda línea: misma familia, un escalón por debajo en peso y color para
+   que se lea como dependencia de la primera y no compita con ella. */
+.brand-text small.brand-sub{font-size:10px;font-weight:600;color:var(--accent);letter-spacing:.14em;margin-top:3px}
 .nav-tabs{display:flex;gap:2px}
 .nav-tabs button{background:none;border:none;font-family:inherit;font-size:13px;font-weight:500;color:var(--ink-soft);padding:7px 13px;border-radius:6px;cursor:pointer;transition:all .2s;white-space:nowrap}
 .nav-tabs button:hover{background:var(--bg-w);color:var(--ink)}
@@ -179,7 +182,8 @@ tr.total-row:hover td{background:var(--ink-soft)}
 .mx-year-go{margin-top:18px;font-size:12px;font-weight:600;color:var(--accent)}
 
 .mx-crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-bottom:10px;padding:10px 12px;background:var(--bg-w);border:1px solid var(--border);border-radius:6px}
-.mx-nav{display:flex;justify-content:flex-end;margin-bottom:18px;padding-bottom:3px}
+.mx-nav{display:flex;justify-content:flex-end;gap:10px;margin-bottom:18px;padding-bottom:3px}
+.mx-chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px}
 /* Reserva de recorrido: en niveles con pocas tarjetas la página quedaba tan
    corta que el ajuste de scroll no alcanzaba a subir los KPIs bajo las barras,
    y cada vista aterrizaba a distinta altura. Con min-height el espacio solo
@@ -533,7 +537,7 @@ body.report-mode #tab-resumen{display:block !important}
 <header class="topbar">
   <div class="topbar-inner">
     <div class="brand">
-      <div class="brand-text">ATTRAPI<small>Dirección de Procesos Administrativos de Construcción</small></div>
+      <div class="brand-text">ATTRAPI<small>Dirección de Procesos Administrativos de Construcción</small><small class="brand-sub">Subdirección de Archivo</small></div>
     </div>
   </div>
 </header>
@@ -944,7 +948,11 @@ body.report-mode #tab-resumen{display:block !important}
 
       <div class="mx-kpis" id="mx-kpis"></div>
       <div class="mx-crumbs" id="mx-crumbs"></div>
-      <div class="mx-nav"><button class="mx-btn relieve" id="mx-back">← Volver</button></div>
+      <div class="mx-nav">
+        <button class="mx-btn relieve" id="mx-chart-toggle">Ver en gráfica</button>
+        <button class="mx-btn relieve" id="mx-back">← Volver</button>
+      </div>
+      <div id="mx-chart" style="display:none"></div>
       <div id="mx-body"></div>
     </div>
   </section>
@@ -2442,6 +2450,8 @@ function mxRender(){
      <div class="mx-kpi"><b>${fmt(t.folios)}</b><span>Folios</span></div>
      <div class="mx-kpi"><b>${fmt(t.tps)}</b><span>Transferencias</span></div>`;
 
+  mxPintaGrafica(rows);
+
   const body = document.getElementById('mx-body');
   if (mxState.detail) { mxRenderDetail(body); return; }
 
@@ -2590,6 +2600,140 @@ function mxBack(){
   mxShowPicker();
 }
 
+
+// ── Gráfica del nivel actual ──────────────────────────────────────────
+// Grafica exactamente lo que está listado abajo: los grupos del nivel en
+// que estás, con los mismos filtros y búsqueda aplicados. Una sola serie,
+// así que el color va por magnitud y no por identidad: un solo tono.
+const MX_METRICAS = [
+  {k:'exp',    etiqueta:'Expedientes'},
+  {k:'cajas',  etiqueta:'Cajas'},
+  {k:'folios', etiqueta:'Folios'}
+];
+const MX_TOPE_BARRAS = 14;   // más allá, las barras dejan de leerse
+let mxChartVisible = false;
+let mxChartMetrica = 'exp';
+let mxChartObj = null;
+
+// Qué agrupa la vista actual. En la lista de expedientes ya no hay nivel
+// de árbol, así que se agrupa por caja: es la división natural que sigue.
+function mxNivelGrafica(){
+  const d = mxState.path.length;
+  if (mxState.detail) return null;
+  if (d < MX_LEVELS.length) return { clave:MX_LEVELS[d].key, titulo:MX_LEVELS[d].label };
+  return { clave:'caja', titulo:'Caja' };
+}
+
+function mxDatosGrafica(rows, clave){
+  const g = new Map();
+  for (const r of rows){
+    const k = mxKey(r[clave]) || '(SIN DATO)';
+    if (!g.has(k)) g.set(k, { etiqueta:r[clave] || '(sin dato)', filas:[] });
+    g.get(k).filas.push(r);
+  }
+  let lista = [...g.values()].map(v=>({ etiqueta:v.etiqueta, ...mxTotals(v.filas) }));
+  lista.sort((a,b)=> b[mxChartMetrica] - a[mxChartMetrica]);
+  if (lista.length > MX_TOPE_BARRAS){
+    const resto = lista.slice(MX_TOPE_BARRAS);
+    const suma = resto.reduce((a,x)=>({
+      exp:a.exp+x.exp, cajas:a.cajas+x.cajas, folios:a.folios+x.folios
+    }), {exp:0,cajas:0,folios:0});
+    lista = lista.slice(0, MX_TOPE_BARRAS);
+    lista.push({ etiqueta:`Otros (${resto.length} grupos)`, ...suma, esResto:true });
+  }
+  return lista;
+}
+
+function mxPintaGrafica(rows){
+  const caja = document.getElementById('mx-chart');
+  const nivel = mxNivelGrafica();
+  const btn = document.getElementById('mx-chart-toggle');
+
+  // En la ficha de un expediente no hay nada que agrupar: se oculta el botón.
+  if (!nivel){
+    btn.style.display = 'none';
+    caja.style.display = 'none';
+    return;
+  }
+  btn.style.display = '';
+  btn.textContent = mxChartVisible ? 'Ocultar gráfica' : 'Ver en gráfica';
+  if (!mxChartVisible){ caja.style.display = 'none'; return; }
+
+  const datos = mxDatosGrafica(rows, nivel.clave);
+  const metrica = MX_METRICAS.find(m=>m.k===mxChartMetrica);
+  const alto = Math.min(540, Math.max(190, datos.length*30 + 56));
+
+  caja.style.display = 'block';
+  caja.innerHTML = `
+    <div class="card" style="margin-bottom:20px">
+      <div class="mx-chart-head">
+        <div>
+          <div class="card-title">${mxEsc(nivel.titulo)} · ${metrica.etiqueta.toLowerCase()}</div>
+          <div class="card-sub" style="margin-bottom:0">${datos.length} ${datos.length===1?'grupo':'grupos'} · ordenados de mayor a menor</div>
+        </div>
+        <div class="toggle-group" id="mx-chart-metrica">
+          ${MX_METRICAS.map(m=>`<button data-m="${m.k}"${m.k===mxChartMetrica?' class="active"':''}>${m.etiqueta}</button>`).join('')}
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:${alto}px"><canvas id="mx-canvas"></canvas></div>
+    </div>`;
+
+  caja.querySelectorAll('#mx-chart-metrica button').forEach(b=>{
+    b.addEventListener('click', ()=>{ mxChartMetrica = b.dataset.m; mxRender(); });
+  });
+
+  if (mxChartObj){ mxChartObj.destroy(); mxChartObj = null; }
+  mxChartObj = new Chart(document.getElementById('mx-canvas'), {
+    type:'bar',
+    data:{
+      labels: datos.map(d=>trunc(d.etiqueta, 42)),
+      datasets:[{
+        label: metrica.etiqueta,
+        data: datos.map(d=>d[mxChartMetrica]),
+        backgroundColor: datos.map(d=> d.esResto ? '#d9ccb4' : '#b8410e'),
+        borderRadius:3,
+        borderSkipped:false,
+        barPercentage:.78
+      }]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true, maintainAspectRatio:false,
+      layout:{ padding:{ right:64 } },
+      plugins:{
+        legend:{ display:false },   // una sola serie: el título ya la nombra
+        tooltip:{
+          callbacks:{
+            title: ctx => datos[ctx[0].dataIndex].etiqueta,
+            label: ctx => `${metrica.etiqueta}: ${fmt(ctx.parsed.x)}`,
+            afterBody: ctx => {
+              const d = datos[ctx[0].dataIndex];
+              return [`${fmt(d.exp)} expedientes · ${fmt(d.cajas)} cajas · ${fmt(d.folios)} folios`];
+            }
+          }
+        },
+        datalabels:{
+          // El proyecto las apaga globalmente; aquí se encienden a propósito:
+          // una barra sin su cifra obliga a estimar contra el eje.
+          display:true,
+          anchor:'end', align:'end', clamp:true, offset:4,
+          color:'#4a4036',
+          font:{ family:"'JetBrains Mono',monospace", size:11, weight:'600' },
+          formatter: v => fmt(v)
+        }
+      },
+      scales:{
+        x:{ beginAtZero:true, grid:{ color:'rgba(26,22,18,.06)' },
+            ticks:{ color:'#8a7f70', font:{ family:"'JetBrains Mono',monospace", size:10 },
+                    callback:v=>fmtS(v) } },
+        y:{ grid:{ display:false },
+            ticks:{ color:'#4a4036', font:{ family:"'DM Sans',sans-serif", size:11 },
+                    autoSkip:false } }
+      }
+    }
+  });
+}
+
 function mxExport(){
   const rows = mxFiltered();
   if (!rows.length) return;
@@ -2651,6 +2795,10 @@ function mxExport(){
   });
   document.getElementById('mx-export').addEventListener('click', mxExport);
   document.getElementById('mx-back').addEventListener('click', mxBack);
+  document.getElementById('mx-chart-toggle').addEventListener('click', ()=>{
+    mxChartVisible = !mxChartVisible;
+    mxRender();
+  });
 })();
 
 let mxReady = false;
