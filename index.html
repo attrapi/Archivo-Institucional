@@ -250,14 +250,18 @@ tr.mx-exp-row{cursor:pointer}
   /* 1 · @starting-style — las tarjetas entran desde abajo al renderizarse.
      Se usa la propiedad 'translate' y no 'transform' para no pelearse con
      el relieve del hover, que sí usa transform. */
+  .mx-year{--paso:170ms}   /* solo son dos: el escalón debe notarse */
+  .mx-node{--paso:70ms}    /* pueden ser veinte: paso corto o se arrastra */
   .mx-year,.mx-node{
     opacity:1;translate:0 0;
     transition:border-color .18s,transform .1s,box-shadow .1s,
-               opacity .36s ease,translate .36s cubic-bezier(.22,1,.36,1);
-    transition-delay:0s,0s,0s,calc(var(--i,0)*26ms),calc(var(--i,0)*26ms);
+               opacity .42s ease,translate .52s cubic-bezier(.22,1,.36,1);
+    transition-delay:0s,0s,0s,
+                     calc(var(--i,0)*var(--paso,70ms)),
+                     calc(var(--i,0)*var(--paso,70ms));
   }
   @starting-style{
-    .mx-year,.mx-node{opacity:0;translate:0 14px}
+    .mx-year,.mx-node{opacity:0;translate:0 26px}
   }
 
   /* 2 · View Transitions — al cambiar de nivel, las tres zonas que cambian
@@ -273,12 +277,22 @@ tr.mx-exp-row{cursor:pointer}
   /* 3 · scroll-driven animations — en listas largas de expedientes cada
      fila se revela sola al entrar en pantalla, sin JavaScript. */
   @supports (animation-timeline: view()){
+    /* view() ancla la línea de tiempo al contenedor con scroll más cercano.
+       .tbl-wrap trae overflow-x:auto, lo que vuelve 'auto' también el eje
+       vertical: se convertía en ese contenedor, nunca se desplazaba y la
+       línea de tiempo quedaba en null, o sea la animación jamás corría.
+       Sin overflow aquí, la referencia pasa a ser el scroll de la página. */
+    #mx-body .tbl-wrap{overflow:visible}
+
     .mx-exp-row{
       animation:mxRowIn linear both;
       animation-timeline:view();
-      animation-range:entry 0% entry 24%;
+      /* 'entry' abarca solo el alto de la fila (44px): el fundido ocurría en
+         29 px de scroll, imperceptible. 'cover' mide contra la pantalla
+         entera, así el revelado toma ~130 px de desplazamiento y se ve. */
+      animation-range:cover 0% cover 18%;
     }
-    @keyframes mxRowIn{from{opacity:0;translate:0 12px}to{opacity:1;translate:0 0}}
+    @keyframes mxRowIn{from{opacity:0;translate:0 28px}to{opacity:1;translate:0 0}}
   }
 }
 
@@ -319,6 +333,10 @@ tr.mx-exp-row{cursor:pointer}
   .mx-nodes{grid-template-columns:1fr}
   .mx-year-stats{grid-template-columns:repeat(3,1fr);gap:14px 12px}
 }
+/* En pantallas angostas la tabla sí necesita desplazarse a lo ancho. Ahí el
+   revelado por scroll se desactiva solo: su línea de tiempo deja de avanzar
+   y las filas se muestran normales. */
+@media(max-width:1100px){ #mx-body .tbl-wrap{overflow-x:auto} }
 
 /* TABS */
 .tab-panel{display:none}
@@ -2390,11 +2408,13 @@ function mxRenderNodes(body, rows, depth){
 
   body.querySelectorAll('.mx-node').forEach(b=>{
     b.addEventListener('click', ()=>{
-      mxTransition(()=>{
-        mxState.path.push({ key:b.dataset.k, label:b.dataset.label });
-        mxState.limit = MX_PAGE;
-        mxRender();
-      });
+      // Sin View Transition a propósito: la transición suspende el renderizado
+      // mientras captura, y se tragaba la entrada escalonada de las tarjetas
+      // nuevas. Al bajar, el escalonado es la señal correcta —"esto es nuevo,
+      // aquí llega"—; el cruce se reserva para volver y para la ficha.
+      mxState.path.push({ key:b.dataset.k, label:b.dataset.label });
+      mxState.limit = MX_PAGE;
+      mxRender();
       mxScrollToResults();
     });
   });
