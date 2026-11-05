@@ -7,7 +7,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23b8410e'/><rect x='14' y='29' width='72' height='9' rx='4.5' fill='%23ffffff' opacity='.9'/><rect x='20' y='41' width='60' height='41' rx='5' fill='%23ffffff'/><rect x='40' y='51' width='20' height='7' rx='3.5' fill='%23b8410e'/></svg>" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
@@ -48,7 +48,9 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
 .brand-text small{display:block;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.16em;margin-top:6px}
 /* Segunda línea: misma familia, un escalón por debajo en peso y color para
    que se lea como dependencia de la primera y no compita con ella. */
-.brand-text small.brand-sub{font-size:10px;font-weight:600;color:var(--accent);letter-spacing:.14em;margin-top:3px}
+/* Itálica real, no inclinada por el navegador: por eso el enlace de fuentes
+   carga la variante 1,600 de DM Sans. */
+.brand-text small.brand-sub{font-size:10px;font-weight:600;font-style:italic;color:var(--accent);letter-spacing:.14em;margin-top:3px}
 .nav-tabs{display:flex;gap:2px}
 .nav-tabs button{background:none;border:none;font-family:inherit;font-size:13px;font-weight:500;color:var(--ink-soft);padding:7px 13px;border-radius:6px;cursor:pointer;transition:all .2s;white-space:nowrap}
 .nav-tabs button:hover{background:var(--bg-w);color:var(--ink)}
