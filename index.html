@@ -197,8 +197,6 @@ tr.total-row:hover td{background:var(--ink-soft)}
 /* Limpiar y Exportar van juntos: sueltos, al angostarse los selectores uno
    subía de renglón y el otro se quedaba abajo. */
 .mx-actions{display:flex;gap:10px;align-items:center}
-.mx-select optgroup{font-style:normal;font-weight:700;color:var(--ink-muted);font-size:11px}
-.mx-select option:disabled{color:#b9ae9c}
 .mx-select{background:var(--bg-w);border:1px solid var(--border);border-radius:6px;padding:9px 11px;font-family:inherit;font-size:12px;color:var(--ink);outline:none;max-width:250px;cursor:pointer;transition:all .2s}
 .mx-select:focus{background:var(--bg-e);border-color:var(--ink-muted)}
 .mx-btn{background:var(--bg-w);border:1px solid var(--border);border-radius:6px;padding:9px 14px;font-family:inherit;font-size:12px;font-weight:500;color:var(--ink-soft);cursor:pointer;transition:all .2s}
@@ -2235,7 +2233,6 @@ async function mxLoad(year){
 function mxOpen(year){
   mxState.year = year;
   mxState.rows = mxCache[year];
-  mxState.universo = {};   // el universo de opciones es por matriz
   mxState.path = [];
   mxState.q = '';
   mxState.filters = {};
@@ -2282,35 +2279,19 @@ function mxFillSelects(){
       if (!seen.has(k)) seen.set(k, { label:r[key], n:0 });
       seen.get(k).n++;
     }
-    const dentro = [...seen.entries()].sort((a,b)=>b[1].n-a[1].n);
-    // Las que no aplican aquí no se borran: se muestran aparte y apagadas,
-    // para que se vea el universo completo y por qué no dan resultados.
-    const fuera = [...mxUniverso(key).entries()].filter(([k])=>!seen.has(k))
-      .sort((a,b)=>a[1].localeCompare(b[1],'es'));
+    // Solo lo que existe en esta rama. Lo que no le corresponde no se lista:
+    // es información de otras unidades que aquí no se tiene que ver.
+    const opts = [...seen.entries()].sort((a,b)=>b[1].n-a[1].n);
     const actual = mxState.filters[key] || '';
-    const opt = (k,label,n,off) =>
-      `<option value="${mxEsc(k)}"${off?' disabled':''}>${mxEsc(trunc(label,46))} (${n})</option>`;
+    // Única excepción: si lo ya elegido deja de aplicar al bajar de nivel, se
+    // conserva con (0). Si se quitara, el selector mostraría "Todas" mientras
+    // el filtro sigue activo y la pantalla vacía no tendría explicación.
+    if (actual && !seen.has(actual)) opts.push([actual, { label:actual, n:0 }]);
     const sel = document.getElementById(id);
     sel.innerHTML = `<option value="">${all}</option>` +
-      (dentro.length ? `<optgroup label="Disponibles aquí">` +
-        dentro.map(([k,v])=>opt(k,v.label,v.n,false)).join('') + `</optgroup>` : '') +
-      (fuera.length ? `<optgroup label="Sin resultados en esta rama">` +
-        fuera.map(([k,label])=>opt(k,label,0,k!==actual)).join('') + `</optgroup>` : '');
+      opts.map(([k,v])=>`<option value="${mxEsc(k)}">${mxEsc(trunc(v.label,46))} (${v.n})</option>`).join('');
     sel.value = actual;
   }
-}
-
-// Todas las opciones que existen en el año, sin importar la rama. Se calcula
-// una vez por matriz y se guarda, porque alimenta cada repintado.
-function mxUniverso(key){
-  const cache = mxState.universo || (mxState.universo = {});
-  if (cache[key]) return cache[key];
-  const m = new Map();
-  for (const r of mxState.rows){
-    const k = mxKey(r[key]);
-    if (k && !m.has(k)) m.set(k, r[key]);
-  }
-  return (cache[key] = m);
 }
 
 function mxRender(){
