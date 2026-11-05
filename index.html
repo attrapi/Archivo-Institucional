@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AC</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%23691c32'/><rect x='18' y='38' width='64' height='44' rx='4' fill='%23fff' opacity='.95'/><rect x='18' y='28' width='64' height='16' rx='4' fill='%23f5e3da'/><rect x='38' y='46' width='24' height='8' rx='3' fill='%23b8410e'/><rect x='12' y='24' width='76' height='6' rx='3' fill='%23b8410e'/></svg>" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23b8410e'/><text x='50' y='52' text-anchor='middle' dominant-baseline='central' font-family='Segoe UI,DM Sans,Arial,sans-serif' font-size='46' font-weight='700' letter-spacing='1' fill='%23ffffff'>SA</text></svg>" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -102,32 +102,33 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
 .tab-bar button:hover{color:var(--ink)}
 .tab-bar button.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
 
-/* ── Menú en píldoras con relieve, igual que el botón Volver ──────────
-   Como todas van en naranja, la activa no puede distinguirse por color:
-   se muestra hundida, como un botón presionado. */
+/* ── Menú en píldoras con relieve ─────────────────────────────────────
+   En reposo van en blanco con letra y borde naranja. La activa se
+   rellena de naranja y se hunde, así el relleno marca cuál es sin
+   depender solo de la posición. */
 .tab-bar{gap:9px;padding:10px 40px;flex-wrap:wrap}
 .tab-bar button{
-  background:var(--accent);color:#fff;
-  border:1px solid #8a300a;border-radius:999px;
+  background:var(--bg-e);color:var(--accent);
+  border:1px solid var(--accent);border-radius:999px;
   margin-bottom:0;padding:9px 17px;font-weight:600;letter-spacing:.01em;
-  box-shadow:0 3px 0 #8a300a,0 4px 10px rgba(184,65,14,.26);
+  box-shadow:0 3px 0 var(--accent),0 4px 10px rgba(184,65,14,.16);
   transition:background .18s,color .18s,border-color .18s,
              transform .08s,box-shadow .08s;
 }
 .tab-bar button:hover{
-  background:var(--bg-e);color:var(--accent);border-color:var(--accent);
-  box-shadow:0 3px 0 var(--accent),0 4px 10px rgba(184,65,14,.2);
+  background:var(--accent-soft);
+  box-shadow:0 3px 0 var(--accent),0 5px 12px rgba(184,65,14,.22);
 }
 .tab-bar button:active{
   transform:translateY(3px);
-  box-shadow:0 0 0 #8a300a,0 1px 4px rgba(184,65,14,.2);
+  box-shadow:0 0 0 var(--accent),0 1px 4px rgba(184,65,14,.2);
 }
-.tab-bar button.active{
-  background:#8a300a;color:#fff;border-color:#6d2607;
+.tab-bar button.active,
+.tab-bar button.active:hover{
+  background:var(--accent);color:#fff;border-color:#8a300a;
   transform:translateY(3px);
-  box-shadow:0 0 0 #6d2607,0 1px 4px rgba(184,65,14,.25);
+  box-shadow:0 0 0 #8a300a,0 1px 4px rgba(184,65,14,.28);
 }
-.tab-bar button.active:hover{background:#7a2b08;color:#fff;border-color:#6d2607}
 
 /* SECTIONS */
 section.panel{max-width:1400px;margin:0 auto 52px;padding:0 40px}
@@ -212,12 +213,12 @@ tr.total-row:hover td{background:var(--ink-soft)}
    aparece cuando el contenido es corto; si es largo, no agrega nada. */
 #mx-body{min-block-size:46vh}
 /* Volver: relieve con borde inferior sólido que se hunde al presionar */
-.mx-btn.back{background:var(--accent);border-color:#8a300a;color:#fff;font-weight:600;
+.mx-btn.relieve{background:var(--accent);border-color:#8a300a;color:#fff;font-weight:600;
   box-shadow:0 3px 0 #8a300a,0 5px 12px rgba(184,65,14,.28);
   transition:background .18s,color .18s,border-color .18s,transform .08s,box-shadow .08s}
-.mx-btn.back:hover{background:var(--bg-e);color:var(--accent);border-color:var(--accent);
+.mx-btn.relieve:hover{background:var(--bg-e);color:var(--accent);border-color:var(--accent);
   box-shadow:0 3px 0 var(--accent),0 5px 12px rgba(184,65,14,.22)}
-.mx-btn.back:active{transform:translateY(3px);
+.mx-btn.relieve:active{transform:translateY(3px);
   box-shadow:0 0 0 #8a300a,0 1px 4px rgba(184,65,14,.2)}
 .mx-crumb{background:none;border:none;font-family:inherit;font-size:12px;color:var(--accent);cursor:pointer;padding:4px 8px;border-radius:4px;transition:background .2s}
 .mx-crumb:hover{background:var(--accent-soft)}
@@ -621,7 +622,7 @@ body.report-mode #tab-resumen{display:block !important}
   <section class="panel" style="padding-top:24px">
     <div class="sec-head">
       <div><div class="sec-title">Distribución de cajas</div><div class="sec-sub">Bodegas y unidades administrativas</div></div>
-      <button id="btn-report" class="search-box" style="cursor:pointer;background:#b8410e;color:#fff;border-color:#b8410e;font-weight:700;padding:10px 18px">Generar reporte</button>
+      <button id="btn-report" class="mx-btn relieve">Generar reporte</button>
     </div>
     <div style="margin-bottom:20px">
       <div class="card">
@@ -972,7 +973,7 @@ body.report-mode #tab-resumen{display:block !important}
 
       <div class="mx-kpis" id="mx-kpis"></div>
       <div class="mx-crumbs" id="mx-crumbs"></div>
-      <div class="mx-nav"><button class="mx-btn back" id="mx-back">← Volver</button></div>
+      <div class="mx-nav"><button class="mx-btn relieve" id="mx-back">← Volver</button></div>
       <div id="mx-body"></div>
     </div>
   </section>
