@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AC</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%23691c32'/><rect x='18' y='38' width='64' height='44' rx='4' fill='%23fff' opacity='.95'/><rect x='18' y='28' width='64' height='16' rx='4' fill='%23f5e3da'/><rect x='38' y='46' width='24' height='8' rx='3' fill='%23b8410e'/><rect x='12' y='24' width='76' height='6' rx='3' fill='%23b8410e'/></svg>" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23b8410e'/><text x='50' y='52' text-anchor='middle' dominant-baseline='central' font-family='Segoe UI,DM Sans,Arial,sans-serif' font-size='46' font-weight='700' letter-spacing='1' fill='%23ffffff'>SA</text></svg>" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -102,33 +102,6 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
 .tab-bar button:hover{color:var(--ink)}
 .tab-bar button.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
 
-/* ── Menú en píldoras con relieve ─────────────────────────────────────
-   En reposo van en blanco con letra y borde naranja. La activa se
-   rellena de naranja y se hunde, así el relleno marca cuál es sin
-   depender solo de la posición. */
-.tab-bar{gap:9px;padding:10px 40px;flex-wrap:wrap}
-.tab-bar button{
-  background:var(--bg-e);color:var(--accent);
-  border:1px solid var(--accent);border-radius:999px;
-  margin-bottom:0;padding:9px 17px;font-weight:600;letter-spacing:.01em;
-  box-shadow:0 3px 0 var(--accent),0 4px 10px rgba(184,65,14,.16);
-  transition:background .18s,color .18s,border-color .18s,
-             transform .08s,box-shadow .08s;
-}
-.tab-bar button:hover{
-  background:var(--accent-soft);
-  box-shadow:0 3px 0 var(--accent),0 5px 12px rgba(184,65,14,.22);
-}
-.tab-bar button:active{
-  transform:translateY(3px);
-  box-shadow:0 0 0 var(--accent),0 1px 4px rgba(184,65,14,.2);
-}
-.tab-bar button.active,
-.tab-bar button.active:hover{
-  background:var(--accent);color:#fff;border-color:#8a300a;
-  transform:translateY(3px);
-  box-shadow:0 0 0 #8a300a,0 1px 4px rgba(184,65,14,.28);
-}
 
 /* SECTIONS */
 section.panel{max-width:1400px;margin:0 auto 52px;padding:0 40px}
