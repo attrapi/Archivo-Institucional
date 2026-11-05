@@ -2342,9 +2342,10 @@ function mxOpen(year){
 function mxScope(exceptKey){
   const q = mxState.q.trim().toLowerCase();
   return mxState.rows.filter(r=>{
-    for (let i=0;i<mxState.path.length;i++){
-      if (mxKey(r[MX_LEVELS[i].key]) !== mxState.path[i].key) return false;
-    }
+    // A propósito NO se considera la ruta del árbol: estando dentro de una
+    // rama, o incluso en un expediente, el desplegable debe seguir ofreciendo
+    // el resto de la matriz para poder saltar a otra cosa. Los demás filtros
+    // sí cuentan, así que ninguna opción listada da cero resultados.
     for (const k in mxState.filters){
       if (k === exceptKey) continue;
       if (mxState.filters[k] && mxKey(r[k]) !== mxState.filters[k]) return false;
@@ -2631,9 +2632,15 @@ function mxExport(){
   for (const [id,key] of binds){
     document.getElementById(id).addEventListener('change', e=>{
       mxState.filters[key] = e.target.value;
-      mxState.limit = MX_PAGE;
+      // Elegir en un filtro es navegar, no estrechar: se suelta la ruta del
+      // árbol y la ficha abierta para que la selección mande sobre toda la
+      // matriz. Si no, estando dentro de una rama la elección no tendría
+      // efecto visible o daría cero.
+      mxState.path = [];
       mxState.detail = null;
+      mxState.limit = MX_PAGE;
       mxRender();
+      mxScrollToResults();
     });
   }
   document.getElementById('mx-clear').addEventListener('click', ()=>{
