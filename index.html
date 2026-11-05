@@ -82,9 +82,11 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
 .kpi-meta{font-size:10px;color:var(--ink-muted);margin-top:4px}
 .kpi-meta span{color:var(--accent);font-weight:500}
 
-/* TAB BAR — pegada debajo del topbar */
+/* TAB BAR — pegada justo debajo del topbar.
+   --topbar-h la mide el JS: con un valor fijo la barra se metía detrás del
+   topbar y se cortaban las letras del menú. */
 .tab-bar-wrap{
-  position:sticky;top:57px;z-index:89;
+  position:sticky;top:var(--topbar-h,80px);z-index:89;
   background:var(--bg-e);
   border-bottom:1px solid var(--border);
   box-shadow:0 2px 8px rgba(26,22,18,.06);
@@ -1712,6 +1714,19 @@ function initDashboard(D) {
     }
   })();
 
+  // ── ALTURA DEL TOPBAR ────────────────────────────────
+  // La barra de pestañas se pega justo debajo del topbar. Se mide en vivo
+  // porque el alto cambia con el ancho de pantalla y con el tamaño de letra.
+  (function syncTopbarHeight(){
+    const tb = document.querySelector('.topbar');
+    if (!tb) return;
+    const apply = () => document.documentElement.style
+      .setProperty('--topbar-h', Math.round(tb.getBoundingClientRect().height) + 'px');
+    apply();
+    if (window.ResizeObserver) new ResizeObserver(apply).observe(tb);
+    window.addEventListener('resize', apply);
+  })();
+
   // ── TABS ─────────────────────────────────────────────
   document.querySelectorAll('.tab-bar button').forEach(btn=>{
     btn.addEventListener('click',()=>{
@@ -2056,6 +2071,18 @@ function mxFiltered(){
 
 const mxEsc = s => String(s??'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+// Al bajar un nivel, deja los KPIs, la ruta y el inicio del resultado justo
+// debajo de las barras pegajosas, en vez de brincar al tope de la página:
+// así se ve de inmediato qué información apareció y de dónde viene.
+function mxScrollToResults(){
+  const ancla = document.getElementById('mx-kpis');
+  if (!ancla) return;
+  const fijo = (document.querySelector('.topbar')?.offsetHeight || 0)
+             + (document.querySelector('.tab-bar-wrap')?.offsetHeight || 0);
+  const y = ancla.getBoundingClientRect().top + window.scrollY - fijo - 14;
+  window.scrollTo({ top:Math.max(0,y), behavior:'smooth' });
+}
+
 // ── Pantalla 1 · tarjetas por año ─────────────────────
 async function mxShowPicker(){
   mxState.year = null;
@@ -2262,7 +2289,7 @@ function mxRenderNodes(body, rows, depth){
       mxState.path.push({ key:b.dataset.k, label:b.dataset.label });
       mxState.limit = MX_PAGE;
       mxRender();
-      document.getElementById('tab-matrices').scrollIntoView({behavior:'smooth',block:'start'});
+      mxScrollToResults();
     });
   });
 }
@@ -2301,7 +2328,7 @@ function mxRenderTable(body, rows){
     tr.addEventListener('click', ()=>{
       mxState.detail = mxState.rows[+tr.dataset.i];
       mxRender();
-      document.getElementById('tab-matrices').scrollIntoView({behavior:'smooth',block:'start'});
+      mxScrollToResults();
     });
   });
   const more = document.getElementById('mx-more');
