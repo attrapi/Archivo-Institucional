@@ -158,14 +158,14 @@ tr.total-row:hover td{background:var(--ink-soft)}
 
 
 /* ═══ MATRICES · explorador ═══ */
-.mx-years{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:860px}
+.mx-years{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:1000px}
 .mx-year{background:var(--bg-e);border:1px solid var(--border);border-radius:4px;padding:28px 30px;box-shadow:var(--sh-sm);cursor:pointer;text-align:left;font-family:inherit;transition:all .25s}
 .mx-year:hover{border-color:var(--accent);box-shadow:var(--sh-md);transform:translateY(-3px)}
 .mx-year-num{font-family:'Fraunces',serif;font-size:46px;font-weight:500;line-height:1;color:var(--accent);letter-spacing:-.02em}
 .mx-year-name{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink-muted);margin-top:10px;line-height:1.5}
-.mx-year-stats{display:flex;gap:26px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.mx-year-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
 .mx-year-stat b{display:block;font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:var(--ink)}
-.mx-year-stat span{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-muted);margin-top:3px}
+.mx-year-stat span{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-muted);margin-top:4px;line-height:1.35}
 .mx-year-go{margin-top:18px;font-size:12px;font-weight:600;color:var(--accent)}
 
 .mx-crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-bottom:18px}
@@ -213,6 +213,7 @@ tr.mx-exp-row{cursor:pointer}
 @media(max-width:860px){
   .mx-years,.mx-kpis{grid-template-columns:1fr 1fr}
   .mx-nodes{grid-template-columns:1fr}
+  .mx-year-stats{grid-template-columns:repeat(3,1fr);gap:14px 12px}
 }
 
 /* TABS */
@@ -2048,10 +2049,13 @@ async function mxShowPicker(){
     await Promise.all(years.map(y => mxLoad(y)));
     box.innerHTML = '<div class="mx-years">' + years.map(y=>{
       const t = mxTotals(mxCache[y]);
+      // Grupos del primer nivel del árbol: lo que se ve al entrar al año.
+      const grupos = new Set(mxCache[y].map(r=>mxKey(r[MX_LEVELS[0].key])).filter(Boolean)).size;
       return `<button class="mx-year" data-year="${y}">
         <div class="mx-year-num">${y}</div>
         <div class="mx-year-name">${mxEsc(MATRICES[y].sub)}</div>
         <div class="mx-year-stats">
+          <div class="mx-year-stat"><b>${fmt(grupos)}</b><span>Grupos</span></div>
           <div class="mx-year-stat"><b>${fmt(t.exp)}</b><span>Expedientes</span></div>
           <div class="mx-year-stat"><b>${fmt(t.cajas)}</b><span>Cajas</span></div>
           <div class="mx-year-stat"><b>${fmtS(t.folios)}</b><span>Folios</span></div>
