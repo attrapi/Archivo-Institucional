@@ -428,6 +428,60 @@ footer{max-width:1400px;margin:60px auto 0;padding:36px 40px;border-top:1px soli
 @media(max-width:600px){.kpis{grid-template-columns:repeat(2,1fr)}.kpi-value{font-size:30px}.sec-head{flex-direction:column;align-items:flex-start;gap:12px}}
 
 /* MODO REPORTE: imprime sólo la pestaña Resumen en una hoja, sin el menú */
+
+/* ═══ MOVIMIENTO EN TODA LA PÁGINA ═══════════════════════════════════
+   Mismo tratamiento que Matrices, extendido a las demás pestañas:
+   los KPIs y las tarjetas entran escalonados, y cambiar de pestaña
+   cruza en vez de cortar.                                             */
+
+@media (prefers-reduced-motion: no-preference){
+
+  /* Entrada escalonada. El índice --i lo reparte el JS por pestaña; al
+     pasar de display:none a visible, @starting-style vuelve a disparar,
+     así que la entrada se repite cada vez que abres la pestaña. */
+  /* Dos pestañas quedan fuera a propósito:
+     · Resumen, porque alimenta el reporte PDF. html2canvas clona el DOM y en
+       el clon las tarjetas nacerían en opacidad 0. Excluirla elimina el
+       riesgo en vez de solo mitigarlo.
+     · Matrices, porque su tabla y su ficha se reconstruyen en cada repintado
+       y parpadearían con cada tecla del buscador. Esa pestaña ya tiene su
+       propio escalonado en .mx-node y .mx-year. */
+  .tab-panel:not(#tab-resumen):not(#tab-matrices) .card{
+    opacity:1;translate:0 0;
+    transition:opacity .42s ease,
+               translate .52s cubic-bezier(.22,1,.36,1);
+    transition-delay:calc(var(--i,0)*70ms);
+  }
+  @starting-style{
+    .tab-panel:not(#tab-resumen):not(#tab-matrices) .card{opacity:0;translate:0 22px}
+  }
+
+  /* Cruce al cambiar de pestaña. El nombre tab-content lo pone y lo quita
+     el JS durante el cambio; fuera de ese momento no existe. */
+  ::view-transition-old(tab-content){animation:mxFadeOut .16s ease both}
+  ::view-transition-new(tab-content){animation:mxFadeIn .28s cubic-bezier(.22,1,.36,1) both}
+}
+
+/* ── Blindaje del reporte PDF y la impresión ──────────────────────────
+   html2canvas clona el DOM para capturarlo. En ese clon los elementos
+   nacen de nuevo, así que @starting-style los dejaría en su fotograma
+   inicial —opacidad 0— y el reporte saldría en blanco. Aquí se apaga
+   todo el movimiento y se fuerza el estado final.                      */
+body.report-mode *,
+body.report-mode *::before,
+body.report-mode *::after{
+  animation:none !important;
+  transition:none !important;
+}
+body.report-mode .kpi,body.report-mode .card,
+body.report-mode .mx-node,body.report-mode .mx-year,body.report-mode .mx-exp-row{
+  opacity:1 !important;translate:none !important;
+}
+@media print{
+  *,*::before,*::after{animation:none !important;transition:none !important}
+  .kpi,.card,.mx-node,.mx-year,.mx-exp-row{opacity:1 !important;translate:none !important}
+}
+
 body.report-mode .tab-bar-wrap,
 body.report-mode #btn-report{display:none !important}
 body.report-mode .tab-panel{display:none !important}
@@ -510,7 +564,7 @@ body.report-mode #tab-resumen{display:block !important}
 </div>
 
 <!-- CONTENIDO DE TABS -->
-<div style="padding-top:24px">
+<div id="tab-content" style="padding-top:24px">
 
 <!-- ═══ TAB: RESUMEN ═══ -->
 <div class="tab-panel active" id="tab-resumen">
@@ -1838,11 +1892,24 @@ function initDashboard(D) {
       }
       document.querySelectorAll('.tab-bar button').forEach(b=>b.classList.remove('active'));
       document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+      // Sin View Transition, por la misma razón que al bajar de nivel en
+      // Matrices: la transición suspende el renderizado mientras captura, y
+      // las tarjetas de la pestaña nueva quedaban esperando a que terminara.
+      // Cambiar de pestaña trae contenido nuevo, así que manda el escalonado.
       btn.classList.add('active');
       document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
       if (btn.dataset.tab === 'matrices') mxInit();
       window.scrollTo({top:0,behavior:'smooth'});
     });
+  });
+
+  // Reparte el índice de entrada entre las tarjetas de cada pestaña, para que
+  // el escalonado funcione también sobre el HTML que no genera el JS. Se
+  // numeran todas las .card en orden de documento; el tope evita que una
+  // pestaña con muchas tarjetas arrastre la última medio segundo.
+  document.querySelectorAll('.tab-panel').forEach(panel=>{
+    panel.querySelectorAll('.card').forEach((el,i)=>
+      el.style.setProperty('--i', Math.min(i,9)));
   });
 
   // ── REPORTE PDF ──────────────────────────────────────
@@ -2176,10 +2243,12 @@ const mxEsc = s => String(s??'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;
 // el estado anterior con el nuevo en vez de reemplazarlo de golpe. Solo para
 // navegación del árbol, no para cada tecla del buscador. Si el navegador no
 // la soporta, o el usuario pidió menos movimiento, corre el cambio directo.
-function mxTransition(cambio){
+function conTransicion(cambio, alTerminar){
+  const fin = () => { if (alTerminar) alTerminar(); };
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (!document.startViewTransition || reduce) { cambio(); return; }
+  if (!document.startViewTransition || reduce) { cambio(); fin(); return; }
   const t = document.startViewTransition(cambio);
+  t.finished.then(fin, fin);
   // Si el usuario hace clic rápido, la transición en curso se cancela y sus
   // promesas rechazan. Es el comportamiento esperado, no un error: se silencia
   // para que no llene la consola de AbortError.
@@ -2333,7 +2402,7 @@ function mxRender(){
     b.addEventListener('click', ()=>{
       const lv = +b.dataset.level;
       if (lv === -1) { mxShowPicker(); return; }
-      mxTransition(()=>{
+      conTransicion(()=>{
         mxState.path = mxState.path.slice(0, lv);
         mxState.detail = null;
         mxState.limit = MX_PAGE;
@@ -2452,7 +2521,7 @@ function mxRenderTable(body, rows){
 
   body.querySelectorAll('.mx-exp-row').forEach(tr=>{
     tr.addEventListener('click', ()=>{
-      mxTransition(()=>{
+      conTransicion(()=>{
         mxState.detail = mxState.rows[+tr.dataset.i];
         mxRender();
       });
@@ -2507,9 +2576,9 @@ function mxRenderDetail(body){
 // Sube un escalón: del detalle a la lista, de un nivel al anterior y,
 // desde la raíz del año, de vuelta a las tarjetas 2025 / 2026.
 function mxBack(){
-  if (mxState.detail){ mxTransition(()=>{ mxState.detail = null; mxRender(); }); return; }
+  if (mxState.detail){ conTransicion(()=>{ mxState.detail = null; mxRender(); }); return; }
   if (mxState.path.length){
-    mxTransition(()=>{
+    conTransicion(()=>{
       mxState.path.pop();
       mxState.limit = MX_PAGE;
       mxRender();
