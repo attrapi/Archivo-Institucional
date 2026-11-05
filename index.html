@@ -102,6 +102,33 @@ body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:v
 .tab-bar button:hover{color:var(--ink)}
 .tab-bar button.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
 
+/* ── Menú en píldoras con relieve, igual que el botón Volver ──────────
+   Como todas van en naranja, la activa no puede distinguirse por color:
+   se muestra hundida, como un botón presionado. */
+.tab-bar{gap:9px;padding:10px 40px;flex-wrap:wrap}
+.tab-bar button{
+  background:var(--accent);color:#fff;
+  border:1px solid #8a300a;border-radius:999px;
+  margin-bottom:0;padding:9px 17px;font-weight:600;letter-spacing:.01em;
+  box-shadow:0 3px 0 #8a300a,0 4px 10px rgba(184,65,14,.26);
+  transition:background .18s,color .18s,border-color .18s,
+             transform .08s,box-shadow .08s;
+}
+.tab-bar button:hover{
+  background:var(--bg-e);color:var(--accent);border-color:var(--accent);
+  box-shadow:0 3px 0 var(--accent),0 4px 10px rgba(184,65,14,.2);
+}
+.tab-bar button:active{
+  transform:translateY(3px);
+  box-shadow:0 0 0 #8a300a,0 1px 4px rgba(184,65,14,.2);
+}
+.tab-bar button.active{
+  background:#8a300a;color:#fff;border-color:#6d2607;
+  transform:translateY(3px);
+  box-shadow:0 0 0 #6d2607,0 1px 4px rgba(184,65,14,.25);
+}
+.tab-bar button.active:hover{background:#7a2b08;color:#fff;border-color:#6d2607}
+
 /* SECTIONS */
 section.panel{max-width:1400px;margin:0 auto 52px;padding:0 40px}
 .sec-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:24px;gap:16px;border-bottom:1px solid var(--border);padding-bottom:16px}
