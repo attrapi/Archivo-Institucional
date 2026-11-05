@@ -194,6 +194,11 @@ tr.total-row:hover td{background:var(--ink-soft)}
 .mx-sep{color:var(--ink-muted);font-size:11px}
 
 .mx-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+/* Limpiar y Exportar van juntos: sueltos, al angostarse los selectores uno
+   subía de renglón y el otro se quedaba abajo. */
+.mx-actions{display:flex;gap:10px;align-items:center}
+.mx-select optgroup{font-style:normal;font-weight:700;color:var(--ink-muted);font-size:11px}
+.mx-select option:disabled{color:#b9ae9c}
 .mx-select{background:var(--bg-w);border:1px solid var(--border);border-radius:6px;padding:9px 11px;font-family:inherit;font-size:12px;color:var(--ink);outline:none;max-width:250px;cursor:pointer;transition:all .2s}
 .mx-select:focus{background:var(--bg-e);border-color:var(--ink-muted)}
 .mx-btn{background:var(--bg-w);border:1px solid var(--border);border-radius:6px;padding:9px 14px;font-family:inherit;font-size:12px;font-weight:500;color:var(--ink-soft);cursor:pointer;transition:all .2s}
@@ -232,6 +237,84 @@ tr.mx-exp-row{cursor:pointer}
 .mx-field b{display:block;font-size:13px;font-weight:500;color:var(--ink);line-height:1.45}
 .mx-field.wide{grid-column:1/-1}
 .mx-spin{display:flex;align-items:center;justify-content:center;gap:12px;padding:3rem;color:var(--ink-muted);font-size:13px}
+
+
+/* ═══ MATRICES · piloto de CSS moderno ═══════════════════════════════
+   Cuatro funciones nativas del navegador, sin librerías. Las cuatro
+   degradan solas: donde no haya soporte, el contenido aparece igual,
+   solo que sin animación. Todo se apaga con prefers-reduced-motion.   */
+
+/* Permite animar alturas 'auto' en el acordeón (<details>). */
+:root{interpolate-size:allow-keywords}
+
+@media (prefers-reduced-motion: no-preference){
+
+  /* 1 · @starting-style — las tarjetas entran desde abajo al renderizarse.
+     Se usa la propiedad 'translate' y no 'transform' para no pelearse con
+     el relieve del hover, que sí usa transform. */
+  .mx-year,.mx-node{
+    opacity:1;translate:0 0;
+    transition:border-color .18s,transform .1s,box-shadow .1s,
+               opacity .36s ease,translate .36s cubic-bezier(.22,1,.36,1);
+    transition-delay:0s,0s,0s,calc(var(--i,0)*26ms),calc(var(--i,0)*26ms);
+  }
+  @starting-style{
+    .mx-year,.mx-node{opacity:0;translate:0 14px}
+  }
+
+  /* 2 · View Transitions — al cambiar de nivel, las tres zonas que cambian
+     se cruzan en lugar de saltar. El resto de la página no se anima. */
+  ::view-transition-old(root),::view-transition-new(root){animation:none}
+  ::view-transition-old(mx-body){animation:mxFadeOut .18s ease both}
+  ::view-transition-new(mx-body){animation:mxFadeIn .30s cubic-bezier(.22,1,.36,1) both}
+  ::view-transition-old(mx-kpis),::view-transition-old(mx-crumbs){animation:mxFadeOut .14s ease both}
+  ::view-transition-new(mx-kpis),::view-transition-new(mx-crumbs){animation:mxFadeIn .22s ease both}
+  @keyframes mxFadeOut{to{opacity:0;translate:0 -8px}}
+  @keyframes mxFadeIn{from{opacity:0;translate:0 12px}}
+
+  /* 3 · scroll-driven animations — en listas largas de expedientes cada
+     fila se revela sola al entrar en pantalla, sin JavaScript. */
+  @supports (animation-timeline: view()){
+    .mx-exp-row{
+      animation:mxRowIn linear both;
+      animation-timeline:view();
+      animation-range:entry 0% entry 24%;
+    }
+    @keyframes mxRowIn{from{opacity:0;translate:0 12px}to{opacity:1;translate:0 0}}
+  }
+}
+
+/* Zonas que participan en la transición de vista. Fuera de la media query
+   para que el nombre exista siempre; sin movimiento solo hace un corte. */
+#mx-kpis{view-transition-name:mx-kpis}
+#mx-crumbs{view-transition-name:mx-crumbs}
+#mx-body{view-transition-name:mx-body}
+
+/* 4 · <details> — acordeón nativo para los campos de control del
+   expediente, que son secundarios y llenaban la ficha de ruido. */
+.mx-acc{margin-top:24px;padding-top:18px;border-top:1px solid var(--border)}
+.mx-acc summary{
+  display:flex;align-items:center;gap:9px;cursor:pointer;list-style:none;
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;
+  color:var(--accent);padding:4px 0;
+}
+.mx-acc summary::-webkit-details-marker{display:none}
+.mx-acc summary::before{
+  content:'';width:7px;height:7px;flex:none;
+  border-right:2px solid currentColor;border-bottom:2px solid currentColor;
+  rotate:-45deg;translate:0 -2px;transition:rotate .25s ease,translate .25s ease;
+}
+.mx-acc[open] summary::before{rotate:45deg;translate:0 -1px}
+.mx-acc summary:hover{color:var(--ink)}
+.mx-acc .mx-fields{padding-top:18px}
+@media (prefers-reduced-motion: no-preference){
+  .mx-acc::details-content{
+    block-size:0;overflow:hidden;opacity:0;
+    transition:block-size .32s cubic-bezier(.22,1,.36,1),opacity .26s ease,
+               content-visibility .32s allow-discrete;
+  }
+  .mx-acc[open]::details-content{block-size:auto;opacity:1}
+}
 
 @media(max-width:860px){
   .mx-years,.mx-kpis{grid-template-columns:1fr 1fr}
@@ -785,13 +868,15 @@ body.report-mode #tab-resumen{display:block !important}
     <!-- Explorador -->
     <div id="mx-explorer" style="display:none">
       <div class="mx-toolbar">
-        <input class="search-box" id="mx-q" type="text" placeholder="Buscar expediente, descripción, código…" style="width:300px">
+        <input class="search-box" id="mx-q" type="text" placeholder="Escribe para filtrar: expediente, descripción, código…" style="width:330px">
         <select class="mx-select" id="mx-f-ua"></select>
         <select class="mx-select" id="mx-f-area"></select>
         <select class="mx-select" id="mx-f-serie"></select>
         <select class="mx-select" id="mx-f-valor"></select>
-        <button class="mx-btn" id="mx-clear">Limpiar</button>
-        <button class="mx-btn dark" id="mx-export">Exportar CSV</button>
+        <div class="mx-actions">
+          <button class="mx-btn" id="mx-clear">Limpiar</button>
+          <button class="mx-btn dark" id="mx-export">Exportar CSV</button>
+        </div>
       </div>
 
       <div class="mx-kpis" id="mx-kpis"></div>
@@ -2071,6 +2156,22 @@ function mxFiltered(){
 
 const mxEsc = s => String(s??'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+// View Transitions: envuelve un cambio de nivel para que el navegador cruce
+// el estado anterior con el nuevo en vez de reemplazarlo de golpe. Solo para
+// navegación del árbol, no para cada tecla del buscador. Si el navegador no
+// la soporta, o el usuario pidió menos movimiento, corre el cambio directo.
+function mxTransition(cambio){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!document.startViewTransition || reduce) { cambio(); return; }
+  const t = document.startViewTransition(cambio);
+  // Si el usuario hace clic rápido, la transición en curso se cancela y sus
+  // promesas rechazan. Es el comportamiento esperado, no un error: se silencia
+  // para que no llene la consola de AbortError.
+  t.ready.catch(()=>{});
+  t.finished.catch(()=>{});
+  t.updateCallbackDone.catch(()=>{});
+}
+
 // Al bajar un nivel, deja los KPIs, la ruta y el inicio del resultado justo
 // debajo de las barras pegajosas, en vez de brincar al tope de la página:
 // así se ve de inmediato qué información apareció y de dónde viene.
@@ -2099,7 +2200,7 @@ async function mxShowPicker(){
       const t = mxTotals(mxCache[y]);
       // Grupos del primer nivel del árbol: lo que se ve al entrar al año.
       const grupos = new Set(mxCache[y].map(r=>mxKey(r[MX_LEVELS[0].key])).filter(Boolean)).size;
-      return `<button class="mx-year" data-year="${y}">
+      return `<button class="mx-year" style="--i:${y==='2025'?0:1}" data-year="${y}">
         <div class="mx-year-num">${y}</div>
         <div class="mx-year-name">${mxEsc(MATRICES[y].sub)}</div>
         <div class="mx-year-stats">
@@ -2134,6 +2235,7 @@ async function mxLoad(year){
 function mxOpen(year){
   mxState.year = year;
   mxState.rows = mxCache[year];
+  mxState.universo = {};   // el universo de opciones es por matriz
   mxState.path = [];
   mxState.q = '';
   mxState.filters = {};
@@ -2180,16 +2282,35 @@ function mxFillSelects(){
       if (!seen.has(k)) seen.set(k, { label:r[key], n:0 });
       seen.get(k).n++;
     }
-    const opts = [...seen.entries()].sort((a,b)=>b[1].n-a[1].n);
+    const dentro = [...seen.entries()].sort((a,b)=>b[1].n-a[1].n);
+    // Las que no aplican aquí no se borran: se muestran aparte y apagadas,
+    // para que se vea el universo completo y por qué no dan resultados.
+    const fuera = [...mxUniverso(key).entries()].filter(([k])=>!seen.has(k))
+      .sort((a,b)=>a[1].localeCompare(b[1],'es'));
     const actual = mxState.filters[key] || '';
-    // Si lo elegido ya no existe aquí, se conserva con (0) en vez de
-    // desaparecer en silencio, para que se vea por qué no hay resultados.
-    if (actual && !seen.has(actual)) opts.push([actual, { label:actual, n:0 }]);
+    const opt = (k,label,n,off) =>
+      `<option value="${mxEsc(k)}"${off?' disabled':''}>${mxEsc(trunc(label,46))} (${n})</option>`;
     const sel = document.getElementById(id);
     sel.innerHTML = `<option value="">${all}</option>` +
-      opts.map(([k,v])=>`<option value="${mxEsc(k)}">${mxEsc(trunc(v.label,46))} (${v.n})</option>`).join('');
+      (dentro.length ? `<optgroup label="Disponibles aquí">` +
+        dentro.map(([k,v])=>opt(k,v.label,v.n,false)).join('') + `</optgroup>` : '') +
+      (fuera.length ? `<optgroup label="Sin resultados en esta rama">` +
+        fuera.map(([k,label])=>opt(k,label,0,k!==actual)).join('') + `</optgroup>` : '');
     sel.value = actual;
   }
+}
+
+// Todas las opciones que existen en el año, sin importar la rama. Se calcula
+// una vez por matriz y se guarda, porque alimenta cada repintado.
+function mxUniverso(key){
+  const cache = mxState.universo || (mxState.universo = {});
+  if (cache[key]) return cache[key];
+  const m = new Map();
+  for (const r of mxState.rows){
+    const k = mxKey(r[key]);
+    if (k && !m.has(k)) m.set(k, r[key]);
+  }
+  return (cache[key] = m);
 }
 
 function mxRender(){
@@ -2213,10 +2334,12 @@ function mxRender(){
     b.addEventListener('click', ()=>{
       const lv = +b.dataset.level;
       if (lv === -1) { mxShowPicker(); return; }
-      mxState.path = mxState.path.slice(0, lv);
-      mxState.detail = null;
-      mxState.limit = MX_PAGE;
-      mxRender();
+      mxTransition(()=>{
+        mxState.path = mxState.path.slice(0, lv);
+        mxState.detail = null;
+        mxState.limit = MX_PAGE;
+        mxRender();
+      });
     });
   });
 
@@ -2273,8 +2396,8 @@ function mxRenderNodes(body, rows, depth){
   const max = list[0].t.exp;
   body.innerHTML =
     `<div class="mx-count">${lv.label} · ${list.length} ${list.length===1?'grupo':'grupos'}</div>` +
-    '<div class="mx-nodes">' + list.map(g=>`
-      <button class="mx-node" data-k="${mxEsc(g.k)}" data-label="${mxEsc(g.label)}">
+    '<div class="mx-nodes">' + list.map((g,i)=>`
+      <button class="mx-node" style="--i:${Math.min(i,9)}" data-k="${mxEsc(g.k)}" data-label="${mxEsc(g.label)}">
         <div class="mx-node-name">${mxEsc(g.label)}</div>
         <div class="mx-node-bar"><i style="width:${Math.max(3,(g.t.exp/max)*100)}%"></i></div>
         <div class="mx-node-meta">
@@ -2286,9 +2409,11 @@ function mxRenderNodes(body, rows, depth){
 
   body.querySelectorAll('.mx-node').forEach(b=>{
     b.addEventListener('click', ()=>{
-      mxState.path.push({ key:b.dataset.k, label:b.dataset.label });
-      mxState.limit = MX_PAGE;
-      mxRender();
+      mxTransition(()=>{
+        mxState.path.push({ key:b.dataset.k, label:b.dataset.label });
+        mxState.limit = MX_PAGE;
+        mxRender();
+      });
       mxScrollToResults();
     });
   });
@@ -2326,8 +2451,10 @@ function mxRenderTable(body, rows){
 
   body.querySelectorAll('.mx-exp-row').forEach(tr=>{
     tr.addEventListener('click', ()=>{
-      mxState.detail = mxState.rows[+tr.dataset.i];
-      mxRender();
+      mxTransition(()=>{
+        mxState.detail = mxState.rows[+tr.dataset.i];
+        mxRender();
+      });
       mxScrollToResults();
     });
   });
@@ -2361,23 +2488,31 @@ function mxRenderDetail(body){
         ${f('Folios', fmt(r.folios))}
         ${f('Original', r.original)}
         ${f('Copia', r.copia)}
-        ${f('Valor documental primario', r.valor)}
-        ${f('Plazo en archivo de trámite', r.plazoT)}
-        ${f('Plazo en archivo de concentración', r.plazoC)}
-        ${f('Total de cajas declarado', r.totalCajas)}
-        ${f('Expedientes declarados', r.expedientes)}
       </div>
+
+      <details class="mx-acc">
+        <summary>Datos de control y plazos</summary>
+        <div class="mx-fields">
+          ${f('Valor documental primario', r.valor)}
+          ${f('Plazo en archivo de trámite', r.plazoT)}
+          ${f('Plazo en archivo de concentración', r.plazoC)}
+          ${f('Total de cajas declarado', r.totalCajas)}
+          ${f('Expedientes declarados', r.expedientes)}
+        </div>
+      </details>
     </div>`;
 }
 
 // Sube un escalón: del detalle a la lista, de un nivel al anterior y,
 // desde la raíz del año, de vuelta a las tarjetas 2025 / 2026.
 function mxBack(){
-  if (mxState.detail){ mxState.detail = null; mxRender(); return; }
+  if (mxState.detail){ mxTransition(()=>{ mxState.detail = null; mxRender(); }); return; }
   if (mxState.path.length){
-    mxState.path.pop();
-    mxState.limit = MX_PAGE;
-    mxRender();
+    mxTransition(()=>{
+      mxState.path.pop();
+      mxState.limit = MX_PAGE;
+      mxRender();
+    });
     return;
   }
   mxShowPicker();
