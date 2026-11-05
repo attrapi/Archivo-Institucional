@@ -168,7 +168,8 @@ tr.total-row:hover td{background:var(--ink-soft)}
 .mx-year-stat span{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-muted);margin-top:4px;line-height:1.35}
 .mx-year-go{margin-top:18px;font-size:12px;font-weight:600;color:var(--accent)}
 
-.mx-crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-bottom:18px}
+.mx-crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-bottom:10px;padding:10px 12px;background:var(--bg-w);border:1px solid var(--border);border-radius:6px}
+.mx-nav{display:flex;justify-content:flex-start;margin-bottom:18px}
 .mx-crumb{background:none;border:none;font-family:inherit;font-size:12px;color:var(--accent);cursor:pointer;padding:4px 8px;border-radius:4px;transition:background .2s}
 .mx-crumb:hover{background:var(--accent-soft)}
 .mx-crumb.current{color:var(--ink);font-weight:600;cursor:default}
@@ -761,8 +762,6 @@ body.report-mode #tab-resumen{display:block !important}
 
     <!-- Explorador -->
     <div id="mx-explorer" style="display:none">
-      <div class="mx-crumbs" id="mx-crumbs"></div>
-
       <div class="mx-toolbar">
         <input class="search-box" id="mx-q" type="text" placeholder="Buscar expediente, descripción, código…" style="width:300px">
         <select class="mx-select" id="mx-f-ua"></select>
@@ -774,6 +773,8 @@ body.report-mode #tab-resumen{display:block !important}
       </div>
 
       <div class="mx-kpis" id="mx-kpis"></div>
+      <div class="mx-crumbs" id="mx-crumbs"></div>
+      <div class="mx-nav"><button class="mx-btn" id="mx-back">← Volver</button></div>
       <div id="mx-body"></div>
     </div>
   </section>
@@ -2151,6 +2152,14 @@ function mxRender(){
     });
   });
 
+  // Botón Volver: siempre presente en el explorador, nombrando su destino.
+  const destino = mxState.detail
+    ? 'la lista'
+    : (mxState.path.length
+        ? (mxState.path.length > 1 ? trunc(mxState.path[mxState.path.length-2].label, 26) : mxState.year)
+        : 'Matrices');
+  document.getElementById('mx-back').textContent = '← Volver a ' + destino;
+
   // KPIs del subconjunto actual
   document.getElementById('mx-kpis').innerHTML =
     `<div class="mx-kpi"><b>${fmt(t.exp)}</b><span>Expedientes</span></div>
@@ -2256,7 +2265,6 @@ function mxRenderDetail(body){
           <div class="mx-detail-title">${mxEsc(r.nombre||'(sin nombre)')}</div>
           <div class="mx-detail-code">${mxEsc(r.codigo)}</div>
         </div>
-        <button class="mx-btn" id="mx-back">← Volver</button>
       </div>
       <div class="mx-fields">
         ${f('Descripción', r.desc, true)}
@@ -2279,10 +2287,19 @@ function mxRenderDetail(body){
         ${f('Expedientes declarados', r.expedientes)}
       </div>
     </div>`;
-  document.getElementById('mx-back').addEventListener('click', ()=>{
-    mxState.detail = null;
+}
+
+// Sube un escalón: del detalle a la lista, de un nivel al anterior y,
+// desde la raíz del año, de vuelta a las tarjetas 2025 / 2026.
+function mxBack(){
+  if (mxState.detail){ mxState.detail = null; mxRender(); return; }
+  if (mxState.path.length){
+    mxState.path.pop();
+    mxState.limit = MX_PAGE;
     mxRender();
-  });
+    return;
+  }
+  mxShowPicker();
 }
 
 function mxExport(){
@@ -2340,6 +2357,7 @@ function mxExport(){
     mxRender();
   });
   document.getElementById('mx-export').addEventListener('click', mxExport);
+  document.getElementById('mx-back').addEventListener('click', mxBack);
 })();
 
 let mxReady = false;
