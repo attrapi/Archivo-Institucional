@@ -156,6 +156,65 @@ tr.total-row:hover td{background:var(--ink-soft)}
 
 .tbl-wrap{overflow-x:auto;margin-top:16px}
 
+
+/* ═══ MATRICES · explorador ═══ */
+.mx-years{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:860px}
+.mx-year{background:var(--bg-e);border:1px solid var(--border);border-radius:4px;padding:28px 30px;box-shadow:var(--sh-sm);cursor:pointer;text-align:left;font-family:inherit;transition:all .25s}
+.mx-year:hover{border-color:var(--accent);box-shadow:var(--sh-md);transform:translateY(-3px)}
+.mx-year-num{font-family:'Fraunces',serif;font-size:46px;font-weight:500;line-height:1;color:var(--accent);letter-spacing:-.02em}
+.mx-year-name{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink-muted);margin-top:10px;line-height:1.5}
+.mx-year-stats{display:flex;gap:26px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.mx-year-stat b{display:block;font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:var(--ink)}
+.mx-year-stat span{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-muted);margin-top:3px}
+.mx-year-go{margin-top:18px;font-size:12px;font-weight:600;color:var(--accent)}
+
+.mx-crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-bottom:18px}
+.mx-crumb{background:none;border:none;font-family:inherit;font-size:12px;color:var(--accent);cursor:pointer;padding:4px 8px;border-radius:4px;transition:background .2s}
+.mx-crumb:hover{background:var(--accent-soft)}
+.mx-crumb.current{color:var(--ink);font-weight:600;cursor:default}
+.mx-crumb.current:hover{background:none}
+.mx-sep{color:var(--ink-muted);font-size:11px}
+
+.mx-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.mx-select{background:var(--bg-w);border:1px solid var(--border);border-radius:6px;padding:9px 11px;font-family:inherit;font-size:12px;color:var(--ink);outline:none;max-width:250px;cursor:pointer;transition:all .2s}
+.mx-select:focus{background:var(--bg-e);border-color:var(--ink-muted)}
+.mx-btn{background:var(--bg-w);border:1px solid var(--border);border-radius:6px;padding:9px 14px;font-family:inherit;font-size:12px;font-weight:500;color:var(--ink-soft);cursor:pointer;transition:all .2s}
+.mx-btn:hover{background:var(--bg-e);border-color:var(--border-s);color:var(--ink)}
+.mx-btn.dark{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.mx-btn.dark:hover{background:var(--ink-soft)}
+
+.mx-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.mx-kpi{background:var(--bg-e);border:1px solid var(--border);border-radius:4px;padding:16px 20px;box-shadow:var(--sh-sm)}
+.mx-kpi b{display:block;font-family:'Fraunces',serif;font-size:27px;font-weight:500;line-height:1;color:var(--ink)}
+.mx-kpi span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-muted);margin-top:7px}
+
+.mx-nodes{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
+.mx-node{background:var(--bg-e);border:1px solid var(--border);border-radius:4px;padding:18px 20px;box-shadow:var(--sh-sm);cursor:pointer;text-align:left;font-family:inherit;transition:all .25s;display:flex;flex-direction:column;gap:13px}
+.mx-node:hover{border-color:var(--accent);box-shadow:var(--sh-md);transform:translateY(-2px)}
+.mx-node-name{font-size:13px;font-weight:600;color:var(--ink);line-height:1.4}
+.mx-node-meta{display:flex;gap:18px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-muted);margin-top:auto}
+.mx-node-meta b{color:var(--ink-soft);font-weight:600}
+.mx-node-bar{height:3px;background:var(--bg-w);border-radius:2px;overflow:hidden}
+.mx-node-bar i{display:block;height:100%;background:linear-gradient(90deg,#c8932b,#b8410e);border-radius:2px}
+
+.mx-more{display:flex;justify-content:center;margin-top:18px}
+.mx-count{font-size:11px;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px}
+tr.mx-exp-row{cursor:pointer}
+
+.mx-detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.mx-detail-title{font-family:'Fraunces',serif;font-size:21px;font-weight:500;line-height:1.3;color:var(--ink)}
+.mx-detail-code{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);margin-top:6px}
+.mx-fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px 26px}
+.mx-field span{display:block;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-muted);margin-bottom:5px}
+.mx-field b{display:block;font-size:13px;font-weight:500;color:var(--ink);line-height:1.45}
+.mx-field.wide{grid-column:1/-1}
+.mx-spin{display:flex;align-items:center;justify-content:center;gap:12px;padding:3rem;color:var(--ink-muted);font-size:13px}
+
+@media(max-width:860px){
+  .mx-years,.mx-kpis{grid-template-columns:1fr 1fr}
+  .mx-nodes{grid-template-columns:1fr}
+}
+
 /* TABS */
 .tab-panel{display:none}
 .tab-panel.active{display:block;animation:fadeIn .3s ease}
@@ -691,13 +750,30 @@ body.report-mode #tab-resumen{display:block !important}
     <div class="sec-head">
       <div>
         <div class="sec-title">Matrices</div>
-        <div class="sec-sub">Inventarios de transferencia primaria por año</div>
+        <div class="sec-sub">Inventarios de transferencia primaria · consulta por unidad, área, serie y expediente</div>
       </div>
+      <div id="mx-head-right" style="font-size:11px;color:var(--ink-muted)"></div>
     </div>
 
-    <div class="card">
-      <div class="card-title">En construcción</div>
-      <div class="card-sub">Esta sección aún no tiene contenido.</div>
+    <!-- Selector de año -->
+    <div id="mx-picker"></div>
+
+    <!-- Explorador -->
+    <div id="mx-explorer" style="display:none">
+      <div class="mx-crumbs" id="mx-crumbs"></div>
+
+      <div class="mx-toolbar">
+        <input class="search-box" id="mx-q" type="text" placeholder="Buscar expediente, descripción, código…" style="width:300px">
+        <select class="mx-select" id="mx-f-ua"></select>
+        <select class="mx-select" id="mx-f-area"></select>
+        <select class="mx-select" id="mx-f-serie"></select>
+        <select class="mx-select" id="mx-f-valor"></select>
+        <button class="mx-btn" id="mx-clear">Limpiar</button>
+        <button class="mx-btn dark" id="mx-export">Exportar CSV</button>
+      </div>
+
+      <div class="mx-kpis" id="mx-kpis"></div>
+      <div id="mx-body"></div>
     </div>
   </section>
 </div>
@@ -1626,6 +1702,7 @@ function initDashboard(D) {
       document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+      if (btn.dataset.tab === 'matrices') mxInit();
       window.scrollTo({top:0,behavior:'smooth'});
     });
   });
@@ -1845,6 +1922,427 @@ async function loadAll() {
       `<p style="color:#b8410e;font-size:14px">⚠ Error: ${err.message}</p>
        <p style="font-size:12px;margin-top:8px;color:#8a7f70">Verifica que el Google Sheets sea público (cualquier persona con el enlace puede ver).</p>`;
   }
+}
+
+
+// ═══════════════════════════════════════════════════════
+// MATRICES · explorador de inventarios de transferencia
+// ═══════════════════════════════════════════════════════
+
+// Cada matriz vive en su propio archivo de Drive y se lee en vivo:
+// lo que se actualice allá se refleja aquí sin tocar código.
+const MATRICES = {
+  '2025': {
+    id:'1HZprwUy8cdIW-HCHEh60jKWi0Z0cAili',
+    gid:'1061379097',
+    sub:'Transferencias primarias 01/2025 a 20/2025',
+    alias:{}
+  },
+  '2026': {
+    id:'1rNGrOxb9-c1lmqYB08GExo-lJPQbqIWM',
+    gid:'2033290808',
+    sub:'Transferencias primarias 01/2026 a 47/2026',
+    // Reorganización 2026: las Direcciones Generales pasaron a Unidades y la
+    // matriz conserva ambos nombres. Se unifican para que el árbol no muestre
+    // la misma área dos veces. Borra una línea si prefieres verlas separadas.
+    alias:{
+      'DIRECCION GENERAL DE ECONOMIA INFORMACION Y REGULACION FERROVIARIA':'UNIDAD DE ECONOMÍA, INFORMACIÓN Y REGULACIÓN FERROVIARIA',
+      'UNIDAD GENERAL DE ECONOMIA INFORMACION Y REGULACION FERROVIARIA'   :'UNIDAD DE ECONOMÍA, INFORMACIÓN Y REGULACIÓN FERROVIARIA',
+      'DIRECCION GENERAL DE ASUNTOS JURIDICOS'                            :'UNIDAD DE ASUNTOS JURÍDICOS'
+    }
+  }
+};
+
+// Niveles del árbol, en orden de descenso.
+const MX_LEVELS = [
+  {key:'ua',    label:'Unidad Administrativa'},
+  {key:'area',  label:'Área Generadora'},
+  {key:'serie', label:'Serie Documental'},
+  {key:'tp',    label:'Transferencia'}
+];
+
+// Clave canónica: ignora acentos, mayúsculas, comas y espacios dobles, de modo
+// que "VERIFICACIÓN SUPERVISIÓN" y "VERIFICACIÓN, SUPERVISIÓN" sean la misma rama.
+const mxKey = s => String(s||'').toUpperCase().normalize('NFD')
+  .replace(/[̀-ͯ]/g,'').replace(/[^A-Z0-9]+/g,' ').trim();
+
+const mxState = { year:null, rows:[], path:[], q:'', filters:{}, limit:60, detail:null };
+const mxCache = {};
+const MX_PAGE = 60;
+
+function mxParse(raw, year){
+  const hdr = (raw[0]||[]).map(h=>String(h||'').trim());
+  const col = name => hdr.findIndex(h => mxKey(h).startsWith(mxKey(name)));
+  const C = {
+    sec:col('No. Sec'), tp:col('No. de Transferencia'), ua:col('Unidad Administrativa'),
+    area:col('Área Generadora'), seccion:col('Clave y nombre de la sección'),
+    serie:col('Clave y Nombre de la Serie'),
+    plazoT:col('Plazo de conservación archivo de trámite'),
+    plazoC:col('Plazo de conservación archivo de concentración'),
+    valor:col('Valor Documental'), totalCajas:col('Total de cajas'),
+    expedientes:col('Expedientes'), caja:col('No. de caja'),
+    codigo:col('Código de clasificación'), nombre:col('Nombre del expediente'),
+    desc:col('Descripción'), fini:col('Fecha de inicio'), fcierre:col('Fecha de cierre'),
+    original:col('Original'), copia:col('Copia'), folios:col('Folios')
+  };
+  const alias = MATRICES[year].alias || {};
+  const g = (r,i) => i<0 ? '' : String(r[i]??'').trim();
+  const canon = v => alias[mxKey(v)] || v;
+  const out = [];
+  for (let i=1;i<raw.length;i++){
+    const r = raw[i];
+    if (!r || !r.some(c=>String(c||'').trim()!=='')) continue;
+    const o = {
+      year, i:out.length,
+      sec:g(r,C.sec), tp:g(r,C.tp), ua:canon(g(r,C.ua)), area:g(r,C.area),
+      seccion:g(r,C.seccion), serie:g(r,C.serie), plazoT:g(r,C.plazoT), plazoC:g(r,C.plazoC),
+      valor:g(r,C.valor), totalCajas:g(r,C.totalCajas), expedientes:g(r,C.expedientes),
+      caja:g(r,C.caja), codigo:g(r,C.codigo), nombre:g(r,C.nombre), desc:g(r,C.desc),
+      fini:g(r,C.fini), fcierre:g(r,C.fcierre), original:g(r,C.original),
+      copia:g(r,C.copia), folios:toNum(g(r,C.folios))
+    };
+    o.hay = (o.nombre+' '+o.desc+' '+o.codigo+' '+o.tp+' '+o.caja+' '+o.serie+' '+o.ua+' '+o.area).toLowerCase();
+    out.push(o);
+  }
+  return out;
+}
+
+function mxTotals(rows){
+  const cajas = new Set(), tps = new Set();
+  let folios = 0;
+  for (const r of rows){
+    if (r.caja) cajas.add(r.tp+'|'+r.caja);
+    if (r.tp) tps.add(r.tp);
+    folios += r.folios;
+  }
+  return { exp:rows.length, cajas:cajas.size, tps:tps.size, folios };
+}
+
+// Filas que pasan la ruta del árbol + filtros + búsqueda.
+function mxFiltered(){
+  const q = mxState.q.trim().toLowerCase();
+  const f = mxState.filters;
+  return mxState.rows.filter(r=>{
+    for (let i=0;i<mxState.path.length;i++){
+      if (mxKey(r[MX_LEVELS[i].key]) !== mxState.path[i].key) return false;
+    }
+    for (const k in f){ if (f[k] && mxKey(r[k]) !== f[k]) return false; }
+    if (q && !r.hay.includes(q)) return false;
+    return true;
+  });
+}
+
+const mxEsc = s => String(s??'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// ── Pantalla 1 · tarjetas por año ─────────────────────
+async function mxShowPicker(){
+  mxState.year = null;
+  document.getElementById('mx-explorer').style.display = 'none';
+  document.getElementById('mx-head-right').textContent = '';
+  const box = document.getElementById('mx-picker');
+  box.style.display = 'block';
+  box.innerHTML = '<div class="mx-spin"><div class="ring"></div> Cargando matrices…</div>';
+
+  try {
+    const years = Object.keys(MATRICES);
+    await Promise.all(years.map(y => mxLoad(y)));
+    box.innerHTML = '<div class="mx-years">' + years.map(y=>{
+      const t = mxTotals(mxCache[y]);
+      return `<button class="mx-year" data-year="${y}">
+        <div class="mx-year-num">${y}</div>
+        <div class="mx-year-name">${mxEsc(MATRICES[y].sub)}</div>
+        <div class="mx-year-stats">
+          <div class="mx-year-stat"><b>${fmt(t.exp)}</b><span>Expedientes</span></div>
+          <div class="mx-year-stat"><b>${fmt(t.cajas)}</b><span>Cajas</span></div>
+          <div class="mx-year-stat"><b>${fmtS(t.folios)}</b><span>Folios</span></div>
+          <div class="mx-year-stat"><b>${fmt(t.tps)}</b><span>Transferencias</span></div>
+        </div>
+        <div class="mx-year-go">Explorar →</div>
+      </button>`;
+    }).join('') + '</div>';
+    box.querySelectorAll('.mx-year').forEach(b=>
+      b.addEventListener('click', ()=> mxOpen(b.dataset.year)));
+  } catch(err){
+    box.innerHTML = '<p class="empty-state">⚠ No se pudieron cargar las matrices: ' + mxEsc(err.message) + '</p>';
+  }
+}
+
+async function mxLoad(year){
+  if (mxCache[year]) return mxCache[year];
+  const cfg = MATRICES[year];
+  const url = `https://docs.google.com/spreadsheets/d/${cfg.id}/gviz/tq?tqx=out:csv&gid=${cfg.gid}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('HTTP ' + res.status + ' en matriz ' + year);
+  const raw = Papa.parse(await res.text(), { skipEmptyLines:false }).data;
+  mxCache[year] = mxParse(raw, year);
+  return mxCache[year];
+}
+
+// ── Pantalla 2 · explorador ───────────────────────────
+function mxOpen(year){
+  mxState.year = year;
+  mxState.rows = mxCache[year];
+  mxState.path = [];
+  mxState.q = '';
+  mxState.filters = {};
+  mxState.detail = null;
+  mxState.limit = MX_PAGE;
+  document.getElementById('mx-picker').style.display = 'none';
+  document.getElementById('mx-explorer').style.display = 'block';
+  document.getElementById('mx-q').value = '';
+  document.getElementById('mx-head-right').innerHTML =
+    'Matriz ' + year + ' <span class="live"><span class="live-dot"></span>en vivo</span>';
+  mxFillSelects();
+  mxRender();
+}
+
+function mxFillSelects(){
+  const defs = [
+    ['mx-f-ua','ua','Todas las unidades'],
+    ['mx-f-area','area','Todas las áreas'],
+    ['mx-f-serie','serie','Todas las series'],
+    ['mx-f-valor','valor','Todos los valores']
+  ];
+  for (const [id, key, all] of defs){
+    const seen = new Map();
+    for (const r of mxState.rows){
+      const k = mxKey(r[key]);
+      if (!k) continue;
+      if (!seen.has(k)) seen.set(k, { label:r[key], n:0 });
+      seen.get(k).n++;
+    }
+    const opts = [...seen.entries()].sort((a,b)=>b[1].n-a[1].n);
+    const sel = document.getElementById(id);
+    sel.innerHTML = `<option value="">${all}</option>` +
+      opts.map(([k,v])=>`<option value="${mxEsc(k)}">${mxEsc(trunc(v.label,46))} (${v.n})</option>`).join('');
+    sel.value = mxState.filters[key] || '';
+  }
+}
+
+function mxRender(){
+  const rows = mxFiltered();
+  const t = mxTotals(rows);
+
+  // Migas de pan
+  const crumbs = ['<button class="mx-crumb" data-level="-1">Matrices</button>',
+                  '<span class="mx-sep">›</span>',
+                  `<button class="mx-crumb${mxState.path.length||mxState.detail?'':' current'}" data-level="0">${mxState.year}</button>`];
+  mxState.path.forEach((p,i)=>{
+    const last = i===mxState.path.length-1 && !mxState.detail;
+    crumbs.push('<span class="mx-sep">›</span>',
+      `<button class="mx-crumb${last?' current':''}" data-level="${i+1}">${mxEsc(trunc(p.label,38))}</button>`);
+  });
+  if (mxState.detail) crumbs.push('<span class="mx-sep">›</span>',
+    '<button class="mx-crumb current">Expediente</button>');
+  const cEl = document.getElementById('mx-crumbs');
+  cEl.innerHTML = crumbs.join('');
+  cEl.querySelectorAll('.mx-crumb[data-level]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const lv = +b.dataset.level;
+      if (lv === -1) { mxShowPicker(); return; }
+      mxState.path = mxState.path.slice(0, lv);
+      mxState.detail = null;
+      mxState.limit = MX_PAGE;
+      mxRender();
+    });
+  });
+
+  // KPIs del subconjunto actual
+  document.getElementById('mx-kpis').innerHTML =
+    `<div class="mx-kpi"><b>${fmt(t.exp)}</b><span>Expedientes</span></div>
+     <div class="mx-kpi"><b>${fmt(t.cajas)}</b><span>Cajas</span></div>
+     <div class="mx-kpi"><b>${fmt(t.folios)}</b><span>Folios</span></div>
+     <div class="mx-kpi"><b>${fmt(t.tps)}</b><span>Transferencias</span></div>`;
+
+  const body = document.getElementById('mx-body');
+  if (mxState.detail) { mxRenderDetail(body); return; }
+
+  const depth = mxState.path.length;
+  if (depth < MX_LEVELS.length) mxRenderNodes(body, rows, depth);
+  else mxRenderTable(body, rows);
+}
+
+function mxRenderNodes(body, rows, depth){
+  const lv = MX_LEVELS[depth];
+  const groups = new Map();
+  for (const r of rows){
+    const k = mxKey(r[lv.key]) || '(SIN DATO)';
+    if (!groups.has(k)) groups.set(k, { label:r[lv.key] || '(sin dato)', rows:[] });
+    groups.get(k).rows.push(r);
+  }
+  const list = [...groups.entries()]
+    .map(([k,v])=>({ k, label:v.label, t:mxTotals(v.rows) }))
+    .sort((a,b)=> b.t.exp - a.t.exp);
+
+  if (!list.length){ body.innerHTML = '<p class="empty-state">Sin resultados con estos filtros.</p>'; return; }
+
+  const max = list[0].t.exp;
+  body.innerHTML =
+    `<div class="mx-count">${lv.label} · ${list.length} ${list.length===1?'grupo':'grupos'}</div>` +
+    '<div class="mx-nodes">' + list.map(g=>`
+      <button class="mx-node" data-k="${mxEsc(g.k)}" data-label="${mxEsc(g.label)}">
+        <div class="mx-node-name">${mxEsc(g.label)}</div>
+        <div class="mx-node-bar"><i style="width:${Math.max(3,(g.t.exp/max)*100)}%"></i></div>
+        <div class="mx-node-meta">
+          <span><b>${fmt(g.t.exp)}</b> exp</span>
+          <span><b>${fmt(g.t.cajas)}</b> cajas</span>
+          <span><b>${fmtS(g.t.folios)}</b> folios</span>
+        </div>
+      </button>`).join('') + '</div>';
+
+  body.querySelectorAll('.mx-node').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      mxState.path.push({ key:b.dataset.k, label:b.dataset.label });
+      mxState.limit = MX_PAGE;
+      mxRender();
+      document.getElementById('tab-matrices').scrollIntoView({behavior:'smooth',block:'start'});
+    });
+  });
+}
+
+function mxRenderTable(body, rows){
+  const shown = rows.slice(0, mxState.limit);
+  body.innerHTML =
+    `<div class="mx-count">Expedientes · mostrando ${fmt(shown.length)} de ${fmt(rows.length)}</div>
+    <div class="card" style="padding:10px 14px">
+      <div class="tbl-wrap" style="margin-top:0">
+        <table>
+          <thead><tr>
+            <th>Código</th><th>Expediente</th><th>Descripción</th>
+            <th class="num">Caja</th><th>Inicio</th><th>Cierre</th><th class="num">Folios</th>
+          </tr></thead>
+          <tbody>${shown.map(r=>`
+            <tr class="mx-exp-row" data-i="${r.i}">
+              <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent)">${mxEsc(r.codigo)}</td>
+              <td class="bold">${mxEsc(trunc(r.nombre,52))}</td>
+              <td>${mxEsc(trunc(r.desc,58))}</td>
+              <td class="num">${mxEsc(r.caja)}</td>
+              <td style="font-size:12px">${mxEsc(r.fini)}</td>
+              <td style="font-size:12px">${mxEsc(r.fcierre)}</td>
+              <td class="num">${fmt(r.folios)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+        ${rows.length ? '' : '<p class="empty-state">Sin resultados con estos filtros.</p>'}
+      </div>
+    </div>` +
+    (shown.length < rows.length
+      ? `<div class="mx-more"><button class="mx-btn" id="mx-more">Mostrar ${Math.min(MX_PAGE, rows.length-shown.length)} más</button></div>`
+      : '');
+
+  body.querySelectorAll('.mx-exp-row').forEach(tr=>{
+    tr.addEventListener('click', ()=>{
+      mxState.detail = mxState.rows[+tr.dataset.i];
+      mxRender();
+      document.getElementById('tab-matrices').scrollIntoView({behavior:'smooth',block:'start'});
+    });
+  });
+  const more = document.getElementById('mx-more');
+  if (more) more.addEventListener('click', ()=>{ mxState.limit += MX_PAGE; mxRender(); });
+}
+
+function mxRenderDetail(body){
+  const r = mxState.detail;
+  const f = (label, value, wide) =>
+    `<div class="mx-field${wide?' wide':''}"><span>${label}</span><b>${mxEsc(value||'—')}</b></div>`;
+  body.innerHTML =
+    `<div class="card">
+      <div class="mx-detail-head">
+        <div>
+          <div class="mx-detail-title">${mxEsc(r.nombre||'(sin nombre)')}</div>
+          <div class="mx-detail-code">${mxEsc(r.codigo)}</div>
+        </div>
+        <button class="mx-btn" id="mx-back">← Volver</button>
+      </div>
+      <div class="mx-fields">
+        ${f('Descripción', r.desc, true)}
+        ${f('Unidad Administrativa', r.ua)}
+        ${f('Área Generadora', r.area)}
+        ${f('Sección documental', r.seccion)}
+        ${f('Serie documental', r.serie)}
+        ${f('Transferencia', r.tp)}
+        ${f('No. de caja', r.caja)}
+        ${f('No. secuencial', r.sec)}
+        ${f('Fecha de inicio', r.fini)}
+        ${f('Fecha de cierre', r.fcierre)}
+        ${f('Folios', fmt(r.folios))}
+        ${f('Original', r.original)}
+        ${f('Copia', r.copia)}
+        ${f('Valor documental primario', r.valor)}
+        ${f('Plazo en archivo de trámite', r.plazoT)}
+        ${f('Plazo en archivo de concentración', r.plazoC)}
+        ${f('Total de cajas declarado', r.totalCajas)}
+        ${f('Expedientes declarados', r.expedientes)}
+      </div>
+    </div>`;
+  document.getElementById('mx-back').addEventListener('click', ()=>{
+    mxState.detail = null;
+    mxRender();
+  });
+}
+
+function mxExport(){
+  const rows = mxFiltered();
+  if (!rows.length) return;
+  const cols = [
+    ['No. Sec.','sec'],['No. de Transferencia','tp'],['Unidad Administrativa','ua'],
+    ['Área Generadora','area'],['Sección','seccion'],['Serie Documental','serie'],
+    ['Plazo trámite','plazoT'],['Plazo concentración','plazoC'],['Valor Documental','valor'],
+    ['Total de cajas','totalCajas'],['Expedientes','expedientes'],['No. de caja','caja'],
+    ['Código de clasificación','codigo'],['Nombre del expediente','nombre'],['Descripción','desc'],
+    ['Fecha de inicio','fini'],['Fecha de cierre','fcierre'],['Original','original'],
+    ['Copia','copia'],['Folios','folios']
+  ];
+  const q = v => '"' + String(v??'').replace(/"/g,'""') + '"';
+  const csv = [cols.map(c=>q(c[0])).join(',')]
+    .concat(rows.map(r=>cols.map(c=>q(r[c[1]])).join(','))).join('\r\n');
+  const slug = ['matriz', mxState.year]
+    .concat(mxState.path.map(p=>mxKey(p.label).toLowerCase().replace(/\s+/g,'-').slice(0,28)))
+    .join('_');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8'}));
+  a.download = slug + '.csv';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+}
+
+(function mxBind(){
+  let tmr;
+  document.getElementById('mx-q').addEventListener('input', e=>{
+    clearTimeout(tmr);
+    tmr = setTimeout(()=>{
+      mxState.q = e.target.value;
+      mxState.limit = MX_PAGE;
+      mxState.detail = null;
+      mxRender();
+    }, 180);
+  });
+  const binds = [['mx-f-ua','ua'],['mx-f-area','area'],['mx-f-serie','serie'],['mx-f-valor','valor']];
+  for (const [id,key] of binds){
+    document.getElementById(id).addEventListener('change', e=>{
+      mxState.filters[key] = e.target.value;
+      mxState.limit = MX_PAGE;
+      mxState.detail = null;
+      mxRender();
+    });
+  }
+  document.getElementById('mx-clear').addEventListener('click', ()=>{
+    mxState.q = '';
+    mxState.filters = {};
+    mxState.detail = null;
+    mxState.limit = MX_PAGE;
+    document.getElementById('mx-q').value = '';
+    mxFillSelects();
+    mxRender();
+  });
+  document.getElementById('mx-export').addEventListener('click', mxExport);
+})();
+
+let mxReady = false;
+function mxInit(){
+  if (mxReady) return;
+  mxReady = true;
+  mxShowPicker();
 }
 
 loadAll();
