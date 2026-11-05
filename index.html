@@ -158,9 +158,16 @@ tr.total-row:hover td{background:var(--ink-soft)}
 
 
 /* ═══ MATRICES · explorador ═══ */
-.mx-years{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:1000px}
-.mx-year{background:var(--bg-e);border:1px solid var(--border);border-radius:4px;padding:28px 30px;box-shadow:var(--sh-sm);cursor:pointer;text-align:left;font-family:inherit;transition:all .25s}
-.mx-year:hover{border-color:var(--accent);box-shadow:var(--sh-md);transform:translateY(-3px)}
+.mx-years{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:1000px;padding-bottom:6px}
+/* Mismo relieve que el botón Volver: canto inferior sólido que se hunde al
+   presionar, para que las tarjetas se lean como opciones y no como cuadros. */
+.mx-year{background:var(--bg-e);border:1px solid var(--border);border-radius:5px;padding:28px 30px;cursor:pointer;text-align:left;font-family:inherit;
+  box-shadow:0 4px 0 var(--border-s),0 6px 14px rgba(26,22,18,.07);
+  transition:border-color .18s,transform .1s,box-shadow .1s}
+.mx-year:hover{border-color:var(--accent);transform:translateY(-2px);
+  box-shadow:0 6px 0 var(--accent),0 10px 20px rgba(184,65,14,.18)}
+.mx-year:active{transform:translateY(4px);
+  box-shadow:0 0 0 var(--border-s),0 2px 5px rgba(26,22,18,.12)}
 .mx-year-num{font-family:'Fraunces',serif;font-size:46px;font-weight:500;line-height:1;color:var(--accent);letter-spacing:-.02em}
 .mx-year-name{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--ink-muted);margin-top:10px;line-height:1.5}
 .mx-year-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
@@ -169,7 +176,7 @@ tr.total-row:hover td{background:var(--ink-soft)}
 .mx-year-go{margin-top:18px;font-size:12px;font-weight:600;color:var(--accent)}
 
 .mx-crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-bottom:10px;padding:10px 12px;background:var(--bg-w);border:1px solid var(--border);border-radius:6px}
-.mx-nav{display:flex;justify-content:flex-start;margin-bottom:18px;padding-bottom:3px}
+.mx-nav{display:flex;justify-content:flex-end;margin-bottom:18px;padding-bottom:3px}
 /* Volver: relieve con borde inferior sólido que se hunde al presionar */
 .mx-btn.back{background:var(--accent);border-color:#8a300a;color:#fff;font-weight:600;
   box-shadow:0 3px 0 #8a300a,0 5px 12px rgba(184,65,14,.28);
@@ -197,9 +204,14 @@ tr.total-row:hover td{background:var(--ink-soft)}
 .mx-kpi b{display:block;font-family:'Fraunces',serif;font-size:27px;font-weight:500;line-height:1;color:var(--ink)}
 .mx-kpi span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-muted);margin-top:7px}
 
-.mx-nodes{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
-.mx-node{background:var(--bg-e);border:1px solid var(--border);border-radius:4px;padding:18px 20px;box-shadow:var(--sh-sm);cursor:pointer;text-align:left;font-family:inherit;transition:all .25s;display:flex;flex-direction:column;gap:13px}
-.mx-node:hover{border-color:var(--accent);box-shadow:var(--sh-md);transform:translateY(-2px)}
+.mx-nodes{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;padding-bottom:6px}
+.mx-node{background:var(--bg-e);border:1px solid var(--border);border-radius:5px;padding:18px 20px;cursor:pointer;text-align:left;font-family:inherit;display:flex;flex-direction:column;gap:13px;
+  box-shadow:0 4px 0 var(--border-s),0 6px 14px rgba(26,22,18,.07);
+  transition:border-color .18s,transform .1s,box-shadow .1s}
+.mx-node:hover{border-color:var(--accent);transform:translateY(-2px);
+  box-shadow:0 6px 0 var(--accent),0 10px 20px rgba(184,65,14,.18)}
+.mx-node:active{transform:translateY(4px);
+  box-shadow:0 0 0 var(--border-s),0 2px 5px rgba(26,22,18,.12)}
 .mx-node-name{font-size:13px;font-weight:600;color:var(--ink);line-height:1.4}
 .mx-node-meta{display:flex;gap:18px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-muted);margin-top:auto}
 .mx-node-meta b{color:var(--ink-soft);font-weight:600}
