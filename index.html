@@ -207,8 +207,6 @@ tr.total-row:hover td{background:var(--ink-soft)}
 .mx-select:focus{background:var(--bg-e);border-color:var(--ink-muted)}
 .mx-btn{background:var(--bg-w);border:1px solid var(--border);border-radius:6px;padding:9px 14px;font-family:inherit;font-size:12px;font-weight:500;color:var(--ink-soft);cursor:pointer;transition:all .2s}
 .mx-btn:hover{background:var(--bg-e);border-color:var(--border-s);color:var(--ink)}
-.mx-btn.dark{background:var(--ink);border-color:var(--ink);color:var(--bg)}
-.mx-btn.dark:hover{background:var(--ink-soft)}
 
 .mx-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
 .mx-kpi{background:var(--bg-e);border:1px solid var(--border);border-radius:4px;padding:16px 20px;box-shadow:var(--sh-sm)}
@@ -940,7 +938,7 @@ body.report-mode #tab-resumen{display:block !important}
         <select class="mx-select" id="mx-f-valor"></select>
         <div class="mx-actions">
           <button class="mx-btn" id="mx-clear">Limpiar</button>
-          <button class="mx-btn dark" id="mx-export">Exportar CSV</button>
+          <button class="mx-btn relieve" id="mx-export">Exportar CSV</button>
         </div>
       </div>
 
