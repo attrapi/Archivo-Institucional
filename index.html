@@ -215,8 +215,9 @@ tr.total-row:hover td{background:var(--ink-soft)}
    al extremo, así el aire sobrante queda entre grupos y no dentro de ellos. */
 .mx-toolbar .mx-select{flex:0 1 178px;min-width:0;max-width:178px}
 .mx-toolbar .mx-actions{flex:none;margin-left:auto}
-/* En pantallas angostas no cabe en un renglón: ahí sí se permite el salto. */
-@media(max-width:1180px){
+/* En pantallas angostas no cabe en un renglón: ahí sí se permite el salto.
+   El umbral subió de 1180 a 1320 al entrar el tercer botón de acciones. */
+@media(max-width:1320px){
   .mx-toolbar{flex-wrap:wrap}
   .mx-toolbar .search-box{flex:1 1 100%}
   .mx-toolbar .mx-select{flex:1 1 170px;max-width:none}
@@ -229,6 +230,9 @@ tr.total-row:hover td{background:var(--ink-soft)}
 .mx-select:focus{background:var(--bg-e);border-color:var(--ink-muted)}
 .mx-btn{background:var(--bg-w);border:1px solid var(--border);border-radius:6px;padding:9px 14px;font-family:inherit;font-size:12px;font-weight:500;color:var(--ink-soft);cursor:pointer;transition:all .2s}
 .mx-btn:hover{background:var(--bg-e);border-color:var(--border-s);color:var(--ink)}
+.mx-btn:disabled{opacity:.45;cursor:not-allowed}
+.mx-btn:disabled:hover{background:var(--bg-w);border-color:var(--border);color:var(--ink-soft)}
+.mx-btn.relieve:disabled:hover{background:var(--accent);border-color:#8a300a;color:#fff}
 
 .mx-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
 .mx-kpi{background:var(--bg-e);border:1px solid var(--border);border-radius:4px;padding:16px 20px;box-shadow:var(--sh-sm)}
@@ -960,6 +964,7 @@ body.report-mode #tab-resumen{display:block !important}
         <select class="mx-select" id="mx-f-valor"></select>
         <div class="mx-actions">
           <button class="mx-btn" id="mx-clear">Limpiar</button>
+          <button class="mx-btn relieve" id="mx-pdf">Gráfica PDF</button>
           <button class="mx-btn relieve" id="mx-export">Exportar CSV</button>
         </div>
       </div>
@@ -2468,6 +2473,15 @@ function mxRender(){
      <div class="mx-kpi"><b>${fmt(t.folios)}</b><span>Folios</span></div>
      <div class="mx-kpi"><b>${fmt(t.tps)}</b><span>Transferencias</span></div>`;
 
+  // En la ficha de un expediente no hay nivel que agrupar, así que tampoco
+  // hay gráfica que imprimir. El botón no depende de que esté desplegada:
+  // la hoja se dibuja aparte, no copia la de pantalla.
+  const btnPdf = document.getElementById('mx-pdf');
+  btnPdf.disabled = !rows.length || !mxNivelGrafica();
+  btnPdf.title = btnPdf.disabled
+    ? 'Abre un nivel con grupos para poder imprimir su gráfica'
+    : `Gráfica de ${mxNivelGrafica().titulo.toLowerCase()} en A4 horizontal`;
+
   mxPintaGrafica(rows);
 
   const body = document.getElementById('mx-body');
@@ -2718,12 +2732,6 @@ function mxPintaGrafica(rows){
   const datos = mxDatosGrafica(rows, nivel);
   const metrica = MX_METRICAS.find(m=>m.k===mxChartMetrica);
 
-  // Lo que se escribe al final de cada barra: la cifra y su unidad, en
-  // singular cuando vale uno ("1 expediente", "33 expedientes").
-  const texto = (v, breve) => `${fmt(v)} ${breve ? metrica.corto : (v===1 ? metrica.uno : metrica.varios)}`;
-  const valores = datos.map(d=>d[mxChartMetrica]);
-  const largoDe = breve => valores.reduce((m,v)=>Math.max(m, texto(v,breve).length), 0);
-
   caja.style.display = 'block';
   caja.innerHTML = `
     <div class="card" style="margin-bottom:20px">
@@ -2746,22 +2754,40 @@ function mxPintaGrafica(rows){
   // Se mide ya montado el contenedor: el alto depende de cuantas barras hay y
   // de cuanto mide cada una, que a su vez depende del ancho disponible.
   const wrap = document.getElementById('mx-wrap');
-  const med = mxMedidasGrafica(wrap.clientWidth || 720, largoDe(false), largoDe(true));
-  const cifra = v => texto(v, med.abrevia);
-  wrap.style.height = Math.min(540, Math.max(190, datos.length*med.barra + 56)) + 'px';
+  const armada = mxConfigGrafica(datos, metrica, wrap.clientWidth || 720);
+  wrap.style.height = armada.alto + 'px';
 
   if (mxChartObj){ mxChartObj.destroy(); mxChartObj = null; }
-  mxChartObj = new Chart(document.getElementById('mx-canvas'), {
+  mxChartObj = new Chart(document.getElementById('mx-canvas'), armada.config);
+}
+
+// La config vive aparte porque la usan dos destinos con anchos distintos: la
+// tarjeta en pantalla y la hoja del PDF. Pasarle el ancho --en vez de leer la
+// ventana-- es lo que permite que el PDF salga a su propia medida.
+function mxConfigGrafica(datos, metrica, ancho){
+  // Lo que se escribe al final de cada barra: la cifra y su unidad, en
+  // singular cuando vale uno ("1 expediente", "33 expedientes").
+  const texto = (v, breve) => `${fmt(v)} ${breve ? metrica.corto : (v===1 ? metrica.uno : metrica.varios)}`;
+  const valores = datos.map(d=>d[metrica.k]);
+  const largoDe = breve => valores.reduce((m,v)=>Math.max(m, texto(v,breve).length), 0);
+  const med = mxMedidasGrafica(ancho, largoDe(false), largoDe(true));
+  const cifra = v => texto(v, med.abrevia);
+  const alto = Math.min(540, Math.max(190, datos.length*med.barra + 56));
+
+  const config = {
     type:'bar',
     data:{
       labels: datos.map(d=>trunc(d.etiqueta, med.tope)),
       datasets:[{
         label: metrica.etiqueta,
-        data: datos.map(d=>d[mxChartMetrica]),
+        data: valores,
         backgroundColor: datos.map(d=> d.esResto ? '#d9ccb4' : '#b8410e'),
         borderRadius:3,
         borderSkipped:false,
-        barPercentage:.78
+        barPercentage:.78,
+        // En pantalla nunca llega a este grosor; es la hoja del PDF, mucho más
+        // alta que la tarjeta, la que si no lo tiene saca barras como vigas.
+        maxBarThickness:44
       }]
     },
     options:{
@@ -2799,7 +2825,189 @@ function mxPintaGrafica(rows){
                     autoSkip:false } }
       }
     }
+  };
+  return { config, alto, med };
+}
+
+// ── GRÁFICA EN PDF ───────────────────────────────────────────────────
+// Contraparte del CSV, no su reemplazo: el CSV es dato que se vuelve a abrir
+// en Excel; esto es la hoja que se imprime y se anexa. Lleva la gráfica del
+// nivel en que estés, con la cabecera institucional y el alcance del que
+// salió --una barra suelta en una hoja en blanco no dice de qué es--.
+
+// Nombre de archivo compartido por el CSV y el PDF: misma ruta, misma huella.
+function mxSlug(prefijo){
+  return [prefijo, mxState.year]
+    .concat(mxState.path.map(p=>mxKey(p.label).toLowerCase().replace(/\s+/g,'-').slice(0,28)))
+    .join('_');
+}
+
+// El logo pasa por canvas porque jsPDF necesita los bytes, no un <img>. Si
+// falla --archivo movido, canvas manchado-- la hoja sale sin él, en vez de
+// no salir.
+function mxPdfLogo(){
+  return new Promise(res=>{
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const c = document.createElement('canvas');
+        c.width = img.naturalWidth; c.height = img.naturalHeight;
+        c.getContext('2d').drawImage(img, 0, 0);
+        res({ dato:c.toDataURL('image/png'), prop:img.naturalWidth/img.naturalHeight });
+      } catch(e){ res(null); }
+    };
+    img.onerror = () => res(null);
+    img.src = 'ATTRAPI.png';
   });
+}
+
+// La gráfica se vuelve a dibujar en un lienzo aparte en vez de copiar el de
+// pantalla: así sale a la medida del hueco que le queda en la hoja --no a la
+// de la ventana-- y al doble de resolución, que en papel es la diferencia
+// entre leerse y no.
+async function mxGraficaPNG(datos, metrica, anchoPx, altoPx){
+  const armada = mxConfigGrafica(datos, metrica, anchoPx);
+
+  const jaula = document.createElement('div');
+  jaula.style.cssText = 'position:fixed;left:-10000px;top:0;background:#fff;' +
+                        'width:' + anchoPx + 'px;height:' + altoPx + 'px';
+  const lienzo = document.createElement('canvas');
+  jaula.appendChild(lienzo);
+  document.body.appendChild(jaula);
+
+  const cfg = Object.assign({}, armada.config, {
+    options: Object.assign({}, armada.config.options, {
+      animation: false,
+      devicePixelRatio: 2,
+      plugins: Object.assign({}, armada.config.options.plugins, { tooltip:{ enabled:false } })
+    })
+  });
+
+  let png = null, tmp = null;
+  try {
+    tmp = new Chart(lienzo, cfg);
+    // Dos cuadros: el primero monta el lienzo, el segundo garantiza el trazo.
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    png = lienzo.toDataURL('image/png');
+  } finally {
+    if (tmp) tmp.destroy();
+    jaula.remove();
+  }
+  return { png, prop: anchoPx / altoPx };
+}
+
+async function mxGraficaPDF(){
+  const btn = document.getElementById('mx-pdf');
+  if (btn.disabled) return;
+  const antes = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Generando…';
+  try { await mxArmaPDF(); }
+  catch(e){
+    console.error('[gráfica pdf]', e);
+    // Sin diálogos del navegador: el aviso vive en el propio botón.
+    btn.textContent = 'No se pudo generar';
+    await new Promise(r=>setTimeout(r, 2400));
+  }
+  finally { btn.disabled = false; btn.textContent = antes; }
+}
+
+async function mxArmaPDF(){
+  const { jsPDF } = window.jspdf;
+  const ANCHO = 297, ALTO = 210, M = 10, UTIL = ANCHO - M*2, PIE = 14;
+
+  const nivel = mxNivelGrafica();
+  const rows = mxFiltered();
+  if (!nivel || !rows.length) return;
+  const datos = mxDatosGrafica(rows, nivel);
+  if (!datos.length) return;
+  const metrica = MX_METRICAS.find(m=>m.k===mxChartMetrica);
+  const logo = await mxPdfLogo();
+
+  const pdf = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4', compress:true });
+  const t = mxTotals(rows);
+  const hoy = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'long', year:'numeric'});
+  const TINTA = [26,22,18], SUAVE = [90,82,72], ACENTO = [184,65,14], LINEA = [201,192,168];
+  const tinta = c => pdf.setTextColor(c[0], c[1], c[2]);
+  const recorta = (txt, w) => {
+    const l = pdf.splitTextToSize(String(txt||''), w);
+    return l.length > 1 ? l[0] + '…' : (l[0] || '');
+  };
+  const cuenta = (n, uno, varios) => fmt(n) + ' ' + (n === 1 ? uno : varios);
+
+  // ── Cabecera institucional ──
+  let x = M;
+  if (logo){
+    const h = 13, w = h * logo.prop;
+    pdf.addImage(logo.dato, 'PNG', M, M - 1, w, h, undefined, 'FAST');
+    x = M + w + 5;
+  }
+  tinta(TINTA); pdf.setFont('helvetica','bold'); pdf.setFontSize(8.5);
+  pdf.text('DIRECCIÓN DE PROCESOS ADMINISTRATIVOS DE CONSTRUCCIÓN', x, M + 3.5);
+  tinta(ACENTO); pdf.setFont('helvetica','bolditalic'); pdf.setFontSize(7.5);
+  pdf.text('Subdirección de Archivo', x, M + 8);
+
+  tinta(TINTA); pdf.setFont('helvetica','bold'); pdf.setFontSize(11);
+  pdf.text('GRÁFICA DE INVENTARIO', ANCHO - M, M + 3.5, {align:'right'});
+  tinta(SUAVE); pdf.setFont('helvetica','normal'); pdf.setFontSize(7.5);
+  pdf.text('Matriz ' + mxState.year + ' · generada el ' + hoy, ANCHO - M, M + 8, {align:'right'});
+
+  pdf.setDrawColor(61,51,42); pdf.setLineWidth(.5);
+  pdf.line(M, M + 13, ANCHO - M, M + 13);
+  let y = M + 19;
+
+  // ── Alcance: de dónde salió esta gráfica y cuánto abarca ──
+  const par = MX_LEVELS.map((lv,i)=>[lv.label, mxState.path[i] ? mxState.path[i].label : 'Todas']);
+  const colW = UTIL / 2, etqW = 31;
+  for (let i=0;i<par.length;i+=2){
+    for (let j=0;j<2 && i+j<par.length;j++){
+      const px = M + j*colW;
+      pdf.setFont('helvetica','bold'); pdf.setFontSize(6.5); tinta(SUAVE);
+      pdf.text(par[i+j][0].toUpperCase(), px, y);
+      pdf.setFont('helvetica','normal'); pdf.setFontSize(8); tinta(TINTA);
+      pdf.text(recorta(par[i+j][1], colW - etqW - 6), px + etqW, y);
+    }
+    y += 5.4;
+  }
+  y += 1.2;
+  pdf.setFont('helvetica','bold'); pdf.setFontSize(8); tinta(ACENTO);
+  pdf.text([cuenta(t.exp, 'expediente', 'expedientes'),
+            cuenta(t.cajas, 'caja', 'cajas'),
+            cuenta(t.tps, 'transferencia', 'transferencias'),
+            cuenta(t.folios, 'folio', 'folios')].join('   ·   '), M, y);
+
+  const sueltos = Object.keys(mxState.filters).filter(k=>mxState.filters[k]);
+  if (mxState.q.trim() || sueltos.length){
+    pdf.setFont('helvetica','italic'); pdf.setFontSize(6.8); tinta(SUAVE);
+    const notas = [];
+    if (mxState.q.trim()) notas.push('búsqueda "' + mxState.q.trim() + '"');
+    if (sueltos.length) notas.push('filtros activos: ' + sueltos.join(', '));
+    pdf.text('Subconjunto filtrado — ' + notas.join(' · '), ANCHO - M, y, {align:'right'});
+  }
+  pdf.setDrawColor(LINEA[0],LINEA[1],LINEA[2]); pdf.setLineWidth(.2);
+  pdf.line(M, y + 3, ANCHO - M, y + 3);
+  y += 9;
+
+  // ── Qué mide la gráfica ──
+  pdf.setFont('helvetica','bold'); pdf.setFontSize(10); tinta(TINTA);
+  pdf.text(nivel.titulo + ' · ' + metrica.etiqueta.toLowerCase(), M, y);
+  pdf.setFont('helvetica','normal'); pdf.setFontSize(7.5); tinta(SUAVE);
+  pdf.text(datos.length + (datos.length === 1 ? ' grupo' : ' grupos') +
+           ' · ordenados de mayor a menor', ANCHO - M, y, {align:'right'});
+  y += 5;
+
+  // ── La gráfica se dibuja al tamaño del hueco que quedó, no al revés: de
+  //    otro modo la hoja terminaba con media página en blanco. ──
+  const dispAlto = ALTO - PIE - y;
+  const PX_MM = 1100 / UTIL;
+  const grafica = await mxGraficaPNG(datos, metrica, 1100, Math.round(dispAlto * PX_MM));
+  pdf.addImage(grafica.png, 'PNG', M, y, UTIL, dispAlto, undefined, 'FAST');
+
+  // ── Pie ──
+  pdf.setFont('helvetica','normal'); pdf.setFontSize(6.8); tinta(SUAVE);
+  pdf.text('ATTRAPI · Archivo de Concentración', M, ALTO - 7);
+  pdf.text('Hoja 1 de 1', ANCHO - M, ALTO - 7, {align:'right'});
+
+  pdf.save(mxSlug('grafica') + '.pdf');
 }
 
 function mxExport(){
@@ -2817,12 +3025,9 @@ function mxExport(){
   const q = v => '"' + String(v??'').replace(/"/g,'""') + '"';
   const csv = [cols.map(c=>q(c[0])).join(',')]
     .concat(rows.map(r=>cols.map(c=>q(r[c[1]])).join(','))).join('\r\n');
-  const slug = ['matriz', mxState.year]
-    .concat(mxState.path.map(p=>mxKey(p.label).toLowerCase().replace(/\s+/g,'-').slice(0,28)))
-    .join('_');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8'}));
-  a.download = slug + '.csv';
+  a.download = mxSlug('matriz') + '.csv';
   a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
 }
@@ -2862,6 +3067,7 @@ function mxExport(){
     mxRender();
   });
   document.getElementById('mx-export').addEventListener('click', mxExport);
+  document.getElementById('mx-pdf').addEventListener('click', mxGraficaPDF);
   document.getElementById('mx-back').addEventListener('click', mxBack);
   document.getElementById('mx-chart-toggle').addEventListener('click', ()=>{
     mxChartVisible = !mxChartVisible;
