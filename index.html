@@ -2624,9 +2624,9 @@ function mxBack(){
 // que estás, con los mismos filtros y búsqueda aplicados. Una sola serie,
 // así que el color va por magnitud y no por identidad: un solo tono.
 const MX_METRICAS = [
-  {k:'exp',    etiqueta:'Expedientes'},
-  {k:'cajas',  etiqueta:'Cajas'},
-  {k:'folios', etiqueta:'Folios'}
+  {k:'exp',    etiqueta:'Expedientes', uno:'expediente', varios:'expedientes', corto:'exp.'},
+  {k:'cajas',  etiqueta:'Cajas',       uno:'caja',       varios:'cajas',       corto:'cajas'},
+  {k:'folios', etiqueta:'Folios',      uno:'folio',      varios:'folios',      corto:'folios'}
 ];
 const MX_TOPE_BARRAS = 14;   // más allá, las barras dejan de leerse
 let mxChartVisible = false;
@@ -2639,14 +2639,17 @@ function mxNivelGrafica(){
   const d = mxState.path.length;
   if (mxState.detail) return null;
   if (d < MX_LEVELS.length) return { clave:MX_LEVELS[d].key, titulo:MX_LEVELS[d].label };
-  return { clave:'caja', titulo:'Caja' };
+  return { clave:'caja', titulo:'Caja', prefijo:'Caja ' };
 }
 
-function mxDatosGrafica(rows, clave){
+// `nivel.prefijo` nombra la etiqueta cuando el valor crudo es solo un numero
+// --las cajas se llaman 1, 2, 3--, de modo que el eje diga "Caja 5" y no "5".
+function mxDatosGrafica(rows, nivel){
+  const clave = nivel.clave, pre = nivel.prefijo || '';
   const g = new Map();
   for (const r of rows){
     const k = mxKey(r[clave]) || '(SIN DATO)';
-    if (!g.has(k)) g.set(k, { etiqueta:r[clave] || '(sin dato)', filas:[] });
+    if (!g.has(k)) g.set(k, { etiqueta:r[clave] ? pre + r[clave] : '(sin dato)', filas:[] });
     g.get(k).filas.push(r);
   }
   let lista = [...g.values()].map(v=>({ etiqueta:v.etiqueta, ...mxTotals(v.filas) }));
@@ -2660,6 +2663,41 @@ function mxDatosGrafica(rows, clave){
     lista.push({ etiqueta:`Otros (${resto.length} grupos)`, ...suma, esResto:true });
   }
   return lista;
+}
+
+// La grafica se ajusta al ancho real de su tarjeta: con poco espacio la
+// tipografia baja un punto, las barras adelgazan y las etiquetas del eje se
+// recortan antes. El hueco de la derecha se calcula a partir del texto mas
+// largo que hay que escribir ahi, para que la cifra no quede cortada; y se
+// limita al 42% del ancho, para que tampoco se coma las barras.
+function mxMedidasGrafica(ancho, largoPleno, largoBreve){
+  const compacto = ancho < 560;
+  const fuente = compacto ? 10 : 11;
+  const minDibujo = compacto ? 90 : 120;
+  // Cuanto texto cabe en el eje. Son dos topes a la vez: lo que sobra tras
+  // reservar el hueco de las cifras y un area de dibujo minima, y el tercio
+  // del ancho que Chart.js concede como maximo a un eje lateral --pasarse de
+  // ahi no ensancha el eje, recorta la etiqueta por la izquierda--.
+  // Medido en esta pagina: DM Sans avanza ~0.57em por caracter.
+  const calc = largo => {
+    const pedido = Math.round(largo * fuente * 0.62) + 18;   // mono avanza ~0.62em
+    const hueco = Math.min(pedido, Math.round(ancho * 0.42));
+    const eje = Math.min(ancho - hueco - minDibujo, ancho / 3 - 20);
+    return { hueco, tope: Math.floor(eje / (fuente * 0.60)) };
+  };
+  // Con sitio de sobra la unidad va entera ("33 expedientes"); solo cuando el
+  // eje se quedaria sin letras legibles se cambia por su abreviatura.
+  let m = calc(largoPleno), abrevia = false;
+  if (m.tope < 16){
+    const b = calc(largoBreve);
+    if (b.tope > m.tope){ m = b; abrevia = true; }
+  }
+  return {
+    fuente, abrevia,
+    hueco: m.hueco,
+    barra: compacto ? 26 : 30,
+    tope: Math.max(6, Math.min(42, m.tope))
+  };
 }
 
 function mxPintaGrafica(rows){
@@ -2677,9 +2715,14 @@ function mxPintaGrafica(rows){
   btn.textContent = mxChartVisible ? 'Ocultar gráfica' : 'Ver en gráfica';
   if (!mxChartVisible){ caja.style.display = 'none'; return; }
 
-  const datos = mxDatosGrafica(rows, nivel.clave);
+  const datos = mxDatosGrafica(rows, nivel);
   const metrica = MX_METRICAS.find(m=>m.k===mxChartMetrica);
-  const alto = Math.min(540, Math.max(190, datos.length*30 + 56));
+
+  // Lo que se escribe al final de cada barra: la cifra y su unidad, en
+  // singular cuando vale uno ("1 expediente", "33 expedientes").
+  const texto = (v, breve) => `${fmt(v)} ${breve ? metrica.corto : (v===1 ? metrica.uno : metrica.varios)}`;
+  const valores = datos.map(d=>d[mxChartMetrica]);
+  const largoDe = breve => valores.reduce((m,v)=>Math.max(m, texto(v,breve).length), 0);
 
   caja.style.display = 'block';
   caja.innerHTML = `
@@ -2693,18 +2736,25 @@ function mxPintaGrafica(rows){
           ${MX_METRICAS.map(m=>`<button data-m="${m.k}"${m.k===mxChartMetrica?' class="active"':''}>${m.etiqueta}</button>`).join('')}
         </div>
       </div>
-      <div class="chart-wrap" style="height:${alto}px"><canvas id="mx-canvas"></canvas></div>
+      <div class="chart-wrap" id="mx-wrap"><canvas id="mx-canvas"></canvas></div>
     </div>`;
 
   caja.querySelectorAll('#mx-chart-metrica button').forEach(b=>{
     b.addEventListener('click', ()=>{ mxChartMetrica = b.dataset.m; mxRender(); });
   });
 
+  // Se mide ya montado el contenedor: el alto depende de cuantas barras hay y
+  // de cuanto mide cada una, que a su vez depende del ancho disponible.
+  const wrap = document.getElementById('mx-wrap');
+  const med = mxMedidasGrafica(wrap.clientWidth || 720, largoDe(false), largoDe(true));
+  const cifra = v => texto(v, med.abrevia);
+  wrap.style.height = Math.min(540, Math.max(190, datos.length*med.barra + 56)) + 'px';
+
   if (mxChartObj){ mxChartObj.destroy(); mxChartObj = null; }
   mxChartObj = new Chart(document.getElementById('mx-canvas'), {
     type:'bar',
     data:{
-      labels: datos.map(d=>trunc(d.etiqueta, 42)),
+      labels: datos.map(d=>trunc(d.etiqueta, med.tope)),
       datasets:[{
         label: metrica.etiqueta,
         data: datos.map(d=>d[mxChartMetrica]),
@@ -2717,7 +2767,7 @@ function mxPintaGrafica(rows){
     options:{
       indexAxis:'y',
       responsive:true, maintainAspectRatio:false,
-      layout:{ padding:{ right:64 } },
+      layout:{ padding:{ right:med.hueco } },
       plugins:{
         legend:{ display:false },   // una sola serie: el título ya la nombra
         tooltip:{
@@ -2736,16 +2786,16 @@ function mxPintaGrafica(rows){
           display:true,
           anchor:'end', align:'end', clamp:true, offset:4,
           color:'#4a4036',
-          font:{ family:"'JetBrains Mono',monospace", size:11, weight:'600' },
-          formatter: v => fmt(v)
+          font:{ family:"'JetBrains Mono',monospace", size:med.fuente, weight:'600' },
+          formatter: cifra
         }
       },
       scales:{
         x:{ beginAtZero:true, grid:{ color:'rgba(26,22,18,.06)' },
-            ticks:{ color:'#8a7f70', font:{ family:"'JetBrains Mono',monospace", size:10 },
+            ticks:{ color:'#8a7f70', font:{ family:"'JetBrains Mono',monospace", size:med.fuente-1 },
                     callback:v=>fmtS(v) } },
         y:{ grid:{ display:false },
-            ticks:{ color:'#4a4036', font:{ family:"'DM Sans',sans-serif", size:11 },
+            ticks:{ color:'#4a4036', font:{ family:"'DM Sans',sans-serif", size:med.fuente },
                     autoSkip:false } }
       }
     }
@@ -2816,6 +2866,17 @@ function mxExport(){
   document.getElementById('mx-chart-toggle').addEventListener('click', ()=>{
     mxChartVisible = !mxChartVisible;
     mxRender();
+  });
+
+  // Las medidas de la grafica se derivan del ancho, y Chart.js solo reajusta
+  // el lienzo: para recalcular recorte, tipografia y hueco hay que repintarla.
+  let mxResizeT;
+  window.addEventListener('resize', ()=>{
+    if (!mxChartVisible || !mxState.year) return;
+    clearTimeout(mxResizeT);
+    mxResizeT = setTimeout(()=>{
+      if (mxChartVisible && mxState.year) mxPintaGrafica(mxFiltered());
+    }, 160);
   });
 })();
 
